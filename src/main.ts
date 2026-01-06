@@ -15,9 +15,12 @@ function handleCLIArgs() {
 
       // Will be initialized after DB is ready
       setTimeout(() => {
-        const { addAlarm } = require('./db');
-        addAlarm(time, label, sound);
-        console.log(`✓ Alarm created: ${time} - ${label}`);
+        try {
+          addAlarm(time, label, sound);
+          console.log(`✓ Alarm created: ${time} - ${label}`);
+        } catch (e) {
+          console.error('Failed to create alarm:', e);
+        }
       }, 1000);
 
       i += 3;
@@ -27,9 +30,12 @@ function handleCLIArgs() {
       const label = args[i + 2] || 'Timer';
 
       setTimeout(() => {
-        const { addTimer } = require('./db');
-        addTimer(duration, label);
-        console.log(`✓ Timer created: ${duration}s - ${label}`);
+        try {
+          addTimer(duration, label);
+          console.log(`✓ Timer created: ${duration}s - ${label}`);
+        } catch (e) {
+          console.error('Failed to create timer:', e);
+        }
       }, 1000);
 
       i += 2;
@@ -49,16 +55,18 @@ function createTray() {
   }
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Show App', click: () => mainWindow?.show() },
-    {
-      label: 'Quit', click: () => {
-        (app as any).isQuitting = true;
-        app.quit();
-      }
-    }
+    { label: '⏰ Show Ginger Alarm', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
+    { type: 'separator' },
+    { label: 'Alarms', click: () => { mainWindow?.show(); } },
+    { label: 'Timer', click: () => { mainWindow?.show(); } },
+    { label: 'World Clock', click: () => { mainWindow?.show(); } },
+    { type: 'separator' },
+    { label: 'Settings', click: () => { mainWindow?.show(); } },
+    { type: 'separator' },
+    { label: 'Quit', click: () => { (app as any).isQuitting = true; app.quit(); } }
   ]);
 
-  tray.setToolTip('Ginger Alarm');
+  tray.setToolTip('Ginger Alarm - Running in background');
   tray.setContextMenu(contextMenu);
 
   tray.on('click', () => {
@@ -120,34 +128,38 @@ app.whenReady().then(() => {
     });
   }
 
-  // Background alarm checker - runs every second
+  // Background alarm checker -runs every second
   setInterval(() => {
-    const { getAlarms } = require('./db');
-    const alarms = getAlarms();
-    const now = new Date();
-    const currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    try {
+      const alarms = getAlarms();
+      const now = new Date();
+      const currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-    alarms.forEach((alarm: any) => {
-      if (alarm.active && alarm.time === currentTime && now.getSeconds() === 0) {
-        if (Notification.isSupported()) {
-          const notification = new Notification({
-            title: 'ALARM!',
-            body: `${alarm.label || 'Alarm'} - ${alarm.time}`,
-            urgency: 'critical',
-            timeoutType: 'never'
-          });
+      alarms.forEach((alarm: any) => {
+        if (alarm.active && alarm.time === currentTime && now.getSeconds() === 0) {
+          if (Notification.isSupported()) {
+            const notification = new Notification({
+              title: 'ALARM!',
+              body: `${alarm.label || 'Alarm'} - ${alarm.time}`,
+              urgency: 'critical',
+              timeoutType: 'never'
+            });
 
-          notification.show();
-          notification.on('click', () => {
-            win.show();
-          });
+            notification.show();
+            notification.on('click', () => {
+              win.show();
+            });
+          }
+
+          win.show();
+          win.focus();
+          win.webContents.send('trigger-alarm', alarm);
         }
-
-        win.show();
-        win.focus();
-        win.webContents.send('trigger-alarm', alarm);
-      }
-    });
+      });
+    } catch (e) {
+      // Silently handle errors in alarm checking
+      console.error('Alarm check error:', e);
+    }
   }, 1000);
 });
 
@@ -159,6 +171,10 @@ app.on('window-all-closed', () => {
 });
 
 import { initDB, getAlarms, addAlarm, deleteAlarm, toggleAlarm, updateAlarm, getTimers, addTimer, deleteTimer, updateTimer, getWorldClocks, addWorldClock, deleteWorldClock } from './db';
+import fs from 'fs';
+
+// Initialize DB immediately
+initDB();
 
 // IPC handlers (same as before)
 ipcMain.handle('get-version', () => app.getVersion());
@@ -195,26 +211,64 @@ let appSettings = {
 };
 
 const performSync = async (serverUrl: string, syncId: string) => {
+  if (!serverUrl || !syncId) {
+    return { success: false, error: 'Missing server URL or sync ID' };
+  }
+
   try {
     const alarms = getAlarms();
     const timers = getTimers();
+    const worldclocks = getWorldClocks();
 
-    // Node 24 support fetch natively
+    // Node 24 supports fetch natively
     const response = await fetch(`${serverUrl}/api/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ syncId, alarms, timers })
+      body: JSON.stringify({ syncId, alarms, timers, worldclocks }),
+      signal: AbortSignal.timeout(5000) // 5 second timeout
     });
 
     if (!response.ok) {
-      throw new Error(`Sync failed with status: ${response.status}`);
+      console.warn(`Sync failed: HTTP ${response.status}`);
+      return { success: false, error: `HTTP ${response.status}` };
     }
 
     const result = await response.json();
-    console.log('Sync successful:', result);
+
+    // Merge server data back to local
+    if (result.alarms) {
+      result.alarms.forEach((alarm: any) => {
+        if (!alarms.find((a: any) => a.id === alarm.id)) {
+          addAlarm(alarm.time, alarm.label, alarm.sound);
+        }
+      });
+    }
+
+    if (result.timers) {
+      result.timers.forEach((timer: any) => {
+        if (!timers.find((t: any) => t.id === timer.id)) {
+          addTimer(timer.duration, timer.label);
+        }
+      });
+    }
+
+    if (result.worldclocks) {
+      result.worldclocks.forEach((clock: any) => {
+        if (!worldclocks.find((c: any) => c.id === clock.id)) {
+          addWorldClock(clock.city, clock.timezone, clock.removable);
+        }
+      });
+    }
+
+    console.log('✓ Sync successful');
     return { success: true };
-  } catch (error) {
-    console.error('Sync failed:', error);
+  } catch (error: any) {
+    // Silently handle network errors - don't spam console
+    if (error.name === 'AbortError' || error.message?.includes('fetch')) {
+      // Timeout or network error - expected when offline
+      return { success: false, error: 'Network unavailable' };
+    }
+    console.warn('Sync error:', error.message);
     return { success: false, error: String(error) };
   }
 };
@@ -245,7 +299,6 @@ ipcMain.handle('sync-data', (_event, serverUrl, syncId) => {
 });
 
 // File System Handlers
-import fs from 'fs';
 
 ipcMain.handle('select-audio-file', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
