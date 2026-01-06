@@ -78,8 +78,9 @@ function createTray() {
 
 function createWindow() {
   const win = new BrowserWindow({
+    icon: path.join(__dirname, '../../assets/ginger-alarm-128x128.png'),
     width: 1000,
-    height: 700,
+    height: 920,
     webPreferences: {
       // Vite provides this path automatically via the forge-vite plugin
       preload: path.join(__dirname, 'preload.js'),
