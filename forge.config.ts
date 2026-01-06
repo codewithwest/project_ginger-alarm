@@ -13,10 +13,10 @@ const config: ForgeConfig = {
     asar: true,
 
     // 2. The name used for the generated .app or .exe (no extension)
-    executableName: 'project-ginger-alarm',
+    executableName: 'ginger-alarm',
 
     // 3. Path to your icon (Forge handles the extension based on platform)
-    icon: './assets/icons/icon',
+    icon: './assets/ginger-alarm-128x128.png',
 
     // 4. Don't set ignore - let Electron Forge Vite plugin handle it automatically
   },
@@ -24,8 +24,16 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({}),
     new MakerZIP({}, ['darwin']),
-    new MakerRpm({}),
-    new MakerDeb({}),
+    new MakerRpm({
+      options: {
+        bin: 'ginger-alarm',
+      },
+    }),
+    new MakerDeb({
+      options: {
+        bin: 'ginger-alarm',
+      },
+    }),
   ],
   plugins: [
     new VitePlugin({

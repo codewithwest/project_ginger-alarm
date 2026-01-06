@@ -7,34 +7,22 @@ on:
 jobs:
    build-linux:
       runs-on: ubuntu-latest
-
       steps:
-         - uses: actions/checkout@v3
+         - uses: actions/checkout@v4
+
+         - name: Install native build dependencies
+           # fakeroot and dpkg are usually pre-installed, but 'rpm' is required for RPM builds
+           run: |
+              sudo apt-get update
+              sudo apt-get install -y rpm fakeroot
 
          - name: Use Node.js
-           uses: actions/setup-node@v3
+           uses: actions/setup-node@v4
            with:
               node-version: "24"
 
          - name: Install dependencies
            run: npm install
 
-         - name: Build and Package .deb
+         - name: Build and Package
            run: npm run make -- --platform=linux --arch=x64
-
-         - name: Find .deb file
-           id: find_deb
-           run: |
-              DEB_FILE=$(find out/make -name "*.deb" -type f | head -n 1)
-              echo "deb_file=$DEB_FILE" >> $GITHUB_OUTPUT
-              echo "Found .deb file: $DEB_FILE"
-
-         - name: Upload .deb to Release
-           uses: actions/upload-release-asset@v1
-           env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-           with:
-              upload_url: ${{ github.event.release.upload_url }}
-              asset_path: ${{ steps.find_deb.outputs.deb_file }}
-              asset_name: ginger-alarm_${{ github.event.release.tag_name }}_amd64.deb
-              asset_content_type: application/vnd.debian.binary-package
