@@ -19,6 +19,12 @@ export const initDB = () => {
       duration INTEGER NOT NULL,
       label TEXT
     );
+    CREATE TABLE IF NOT EXISTS worldclocks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      city TEXT NOT NULL,
+      timezone TEXT NOT NULL,
+      removable INTEGER DEFAULT 1
+    );
   `);
 
   try {
@@ -42,3 +48,8 @@ export const getTimers = () => db.prepare('SELECT * FROM timers').all();
 export const addTimer = (duration: number, label: string) => db.prepare('INSERT INTO timers (duration, label) VALUES (?, ?)').run(duration, label);
 export const deleteTimer = (id: number) => db.prepare('DELETE FROM timers WHERE id = ?').run(id);
 export const updateTimer = (id: number, duration: number, label: string) => db.prepare('UPDATE timers SET duration = ?, label = ? WHERE id = ?').run(duration, label, id);
+
+// World Clocks API
+export const getWorldClocks = () => db.prepare('SELECT * FROM worldclocks').all();
+export const addWorldClock = (city: string, timezone: string, removable: number = 1) => db.prepare('INSERT INTO worldclocks (city, timezone, removable) VALUES (?, ?, ?)').run(city, timezone, removable);
+export const deleteWorldClock = (id: number) => db.prepare('DELETE FROM worldclocks WHERE id = ?').run(id);

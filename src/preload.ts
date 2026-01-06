@@ -16,9 +16,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
    deleteTimer: (id: number) => ipcRenderer.invoke('delete-timer', id),
    updateTimer: (id: number, duration: number, label: string) => ipcRenderer.invoke('update-timer', id, duration, label),
 
+   getWorldClocks: () => ipcRenderer.invoke('get-worldclocks'),
+   addWorldClock: (city: string, timezone: string, removable: number) => ipcRenderer.invoke('add-worldclock', city, timezone, removable),
+   deleteWorldClock: (id: number) => ipcRenderer.invoke('delete-worldclock', id),
+
    updateSettings: (serverUrl: string, syncId: string) => ipcRenderer.send('update-settings', serverUrl, syncId),
    syncData: (serverUrl: string, syncId: string) => ipcRenderer.invoke('sync-data', serverUrl, syncId),
 
    selectAudioFile: () => ipcRenderer.invoke('select-audio-file'),
-   checkFileExists: (path: string) => ipcRenderer.invoke('check-file-exists', path)
+   checkFileExists: (path: string) => ipcRenderer.invoke('check-file-exists', path),
+
+   // Auto-update
+   installUpdate: () => ipcRenderer.invoke('install-update'),
+   onUpdateAvailable: (callback: () => void) => ipcRenderer.on('update-available', callback),
+   onUpdateDownloaded: (callback: () => void) => ipcRenderer.on('update-downloaded', callback)
 });

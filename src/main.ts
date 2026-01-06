@@ -1,5 +1,41 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
+import { autoUpdater } from 'electron-updater';
+
+// CLI Arguments Handler
+function handleCLIArgs() {
+  const args = process.argv.slice(2);
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--create-alarm' && args[i + 1]) {
+      // Format: --create-alarm "07:00" "Wake up" "alarm.mp3"
+      const time = args[i + 1];
+      const label = args[i + 2] || 'Alarm';
+      const sound = args[i + 3] || 'alarm.mp3';
+
+      // Will be initialized after DB is ready
+      setTimeout(() => {
+        const { addAlarm } = require('./db');
+        addAlarm(time, label, sound);
+        console.log(`Alarm created: ${time} - ${label}`);
+      }, 1000);
+
+      i += 3;
+    } else if (args[i] === '--create-timer' && args[i + 1]) {
+      // Format: --create-timer 900 "15 minute timer"
+      const duration = parseInt(args[i + 1]);
+      const label = args[i + 2] || 'Timer';
+
+      setTimeout(() => {
+        const { addTimer } = require('./db');
+        addTimer(duration, label);
+        console.log(`Timer created: ${duration}s - ${label}`);
+      }, 1000);
+
+      i += 2;
+    }
+  }
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -20,15 +56,36 @@ function createWindow() {
     // In production, load the built index.html from the .vite folder
     win.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
+
+  return win;
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  const win = createWindow();
+  handleCLIArgs();
+
+  // Auto-updater setup
+  autoUpdater.checkForUpdatesAndNotify();
+
+  // Check for updates every hour
+  setInterval(() => {
+    autoUpdater.checkForUpdatesAndNotify();
+  }, 60 * 60 * 1000);
+
+  autoUpdater.on('update-available', () => {
+    win.webContents.send('update-available');
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    win.webContents.send('update-downloaded');
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-import { initDB, getAlarms, addAlarm, deleteAlarm, toggleAlarm, updateAlarm, getTimers, addTimer, deleteTimer, updateTimer } from './db';
+import { initDB, getAlarms, addAlarm, deleteAlarm, toggleAlarm, updateAlarm, getTimers, addTimer, deleteTimer, updateTimer, getWorldClocks, addWorldClock, deleteWorldClock } from './db';
 
 // IPC handlers (same as before)
 ipcMain.handle('get-version', () => app.getVersion());
@@ -48,6 +105,10 @@ ipcMain.handle('get-timers', () => getTimers());
 ipcMain.handle('add-timer', (_event, duration, label) => addTimer(duration, label));
 ipcMain.handle('delete-timer', (_event, id) => deleteTimer(id));
 ipcMain.handle('update-timer', (_event, id, duration, label) => updateTimer(id, duration, label));
+
+ipcMain.handle('get-worldclocks', () => getWorldClocks());
+ipcMain.handle('add-worldclock', (_event, city, timezone, removable) => addWorldClock(city, timezone, removable));
+ipcMain.handle('delete-worldclock', (_event, id) => deleteWorldClock(id));
 
 // Initialize DB
 // Initialize DB
@@ -125,6 +186,11 @@ ipcMain.handle('select-audio-file', async () => {
 ipcMain.handle('check-file-exists', (_event, filePath) => {
   if (!filePath) return false;
   return fs.existsSync(filePath);
+});
+
+// Auto-update handlers
+ipcMain.handle('install-update', () => {
+  autoUpdater.quitAndInstall();
 });
 
 // Start initial sync interval

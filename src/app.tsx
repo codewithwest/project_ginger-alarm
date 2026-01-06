@@ -9,6 +9,7 @@ import Stopwatch from './pages/Stopwatch';
 import Settings from './pages/Settings';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import Help from './pages/Help';
 
 const App = (): JSX.Element => {
    return (
@@ -22,6 +23,7 @@ const App = (): JSX.Element => {
                <Route path="/settings" element={<Settings />} />
                <Route path="/privacy" element={<Privacy />} />
                <Route path="/terms" element={<Terms />} />
+               <Route path="/help" element={<Help />} />
             </Routes>
          </Layout>
       </HashRouter>
