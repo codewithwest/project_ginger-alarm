@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Tray, Menu, Notification } from 'electron';
 import path from 'path';
 import { autoUpdater } from 'electron-updater';
 
@@ -17,7 +17,7 @@ function handleCLIArgs() {
       setTimeout(() => {
         const { addAlarm } = require('./db');
         addAlarm(time, label, sound);
-        console.log(`Alarm created: ${time} - ${label}`);
+        console.log(`✓ Alarm created: ${time} - ${label}`);
       }, 1000);
 
       i += 3;
@@ -29,12 +29,41 @@ function handleCLIArgs() {
       setTimeout(() => {
         const { addTimer } = require('./db');
         addTimer(duration, label);
-        console.log(`Timer created: ${duration}s - ${label}`);
+        console.log(`✓ Timer created: ${duration}s - ${label}`);
       }, 1000);
 
       i += 2;
     }
   }
+}
+
+let tray: Tray | null = null;
+let mainWindow: BrowserWindow | null = null;
+
+function createTray() {
+  try {
+    tray = new Tray(path.join(__dirname, '../renderer/main_window/favicon.ico'));
+  } catch (e) {
+    // Icon not found, skip tray
+    return;
+  }
+
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Show App', click: () => mainWindow?.show() },
+    {
+      label: 'Quit', click: () => {
+        (app as any).isQuitting = true;
+        app.quit();
+      }
+    }
+  ]);
+
+  tray.setToolTip('Ginger Alarm');
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    mainWindow?.show();
+  });
 }
 
 function createWindow() {
@@ -57,32 +86,76 @@ function createWindow() {
     win.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
+  win.on('close', (event) => {
+    if (!(app as any).isQuitting) {
+      event.preventDefault();
+      win.hide();
+    }
+  });
+
+  mainWindow = win;
   return win;
 }
 
 app.whenReady().then(() => {
   const win = createWindow();
+  createTray();
   handleCLIArgs();
 
-  // Auto-updater setup
-  autoUpdater.checkForUpdatesAndNotify();
-
-  // Check for updates every hour
-  setInterval(() => {
+  // Only check for updates in production builds
+  const isDev = MAIN_WINDOW_VITE_DEV_SERVER_URL !== undefined;
+  if (!isDev) {
     autoUpdater.checkForUpdatesAndNotify();
-  }, 60 * 60 * 1000);
 
-  autoUpdater.on('update-available', () => {
-    win.webContents.send('update-available');
-  });
+    setInterval(() => {
+      autoUpdater.checkForUpdatesAndNotify();
+    }, 60 * 60 * 1000);
 
-  autoUpdater.on('update-downloaded', () => {
-    win.webContents.send('update-downloaded');
-  });
+    autoUpdater.on('update-available', () => {
+      win.webContents.send('update-available');
+    });
+
+    autoUpdater.on('update-downloaded', () => {
+      win.webContents.send('update-downloaded');
+    });
+  }
+
+  // Background alarm checker - runs every second
+  setInterval(() => {
+    const { getAlarms } = require('./db');
+    const alarms = getAlarms();
+    const now = new Date();
+    const currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    alarms.forEach((alarm: any) => {
+      if (alarm.active && alarm.time === currentTime && now.getSeconds() === 0) {
+        if (Notification.isSupported()) {
+          const notification = new Notification({
+            title: 'ALARM!',
+            body: `${alarm.label || 'Alarm'} - ${alarm.time}`,
+            urgency: 'critical',
+            timeoutType: 'never'
+          });
+
+          notification.show();
+          notification.on('click', () => {
+            win.show();
+          });
+        }
+
+        win.show();
+        win.focus();
+        win.webContents.send('trigger-alarm', alarm);
+      }
+    });
+  }, 1000);
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if ((app as any).isQuitting) {
+    app.quit();
+  }
+  // Keep running in background/tray
 });
 
 import { initDB, getAlarms, addAlarm, deleteAlarm, toggleAlarm, updateAlarm, getTimers, addTimer, deleteTimer, updateTimer, getWorldClocks, addWorldClock, deleteWorldClock } from './db';

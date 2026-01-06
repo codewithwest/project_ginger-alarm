@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Ginger Alarm CLI wrapper
+APP_NAME="project_ginger-alarm"
+
+# Try development mode first
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ -f "$SCRIPT_DIR/package.json" ]; then
+    cd "$SCRIPT_DIR"
+    npm start -- -- --no-sandbox "$@" 2>/dev/null &
+    echo "✓ Command sent to Ginger Alarm"
+    exit 0
+fi
+
+echo "Error: Please run 'npm link' from the project directory first."
+exit 1
