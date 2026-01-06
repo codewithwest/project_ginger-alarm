@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
    selectAudioFile: () => ipcRenderer.invoke('select-audio-file'),
    checkFileExists: (path: string) => ipcRenderer.invoke('check-file-exists', path),
 
+   getReleaseNotes: () => ipcRenderer.invoke('get-release-notes'),
+
    // Auto-update
    installUpdate: () => ipcRenderer.invoke('install-update'),
    onUpdateAvailable: (callback: () => void) => ipcRenderer.on('update-available', callback),

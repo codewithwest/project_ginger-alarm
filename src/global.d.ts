@@ -24,6 +24,8 @@ export interface IElectronAPI {
    selectAudioFile: () => Promise<string | null>;
    checkFileExists: (path: string) => Promise<boolean>;
 
+   getReleaseNotes: () => Promise<Array<{ filename: string; content: string }>>;
+
    // Auto-update
    installUpdate: () => Promise<void>;
    onUpdateAvailable: (callback: () => void) => void;

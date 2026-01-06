@@ -18,17 +18,7 @@ const config: ForgeConfig = {
     // 3. Path to your icon (Forge handles the extension based on platform)
     icon: './assets/icons/icon',
 
-    // 4. Files to include outside the ASAR (e.g., binaries or huge database files)
-    extraResource: [
-      './src/assets/audio/',
-    ],
-
-    // 5. Ignore development-only files to keep the bundle small
-    ignore: [
-      /^\/src/,
-      /(.+)tsconfig.json/,
-      /^\/\.vite/,
-    ],
+    // 4. Don't set ignore - let Electron Forge Vite plugin handle it automatically
   },
   rebuildConfig: {},
   makers: [
