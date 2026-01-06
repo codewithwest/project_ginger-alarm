@@ -78,7 +78,7 @@ function createTray() {
 
 function createWindow() {
   const win = new BrowserWindow({
-    icon: path.join(__dirname, '../../assets/ginger-alarm-128x128.png'),
+    icon: path.join(__dirname, '../assets/ginger-alarm-128x128.png'),
     width: 1000,
     height: 920,
     webPreferences: {

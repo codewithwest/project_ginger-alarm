@@ -1,8 +1,8 @@
 {
-  "name": "project_ginger-alarm",
+  "name": "ginger-alarm",
   "productName": "Ginger Alarm",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Ginger Alarm",
   "main": ".vite/build/main.js",
   "bin": {
     "ginger-alarm": "./bin/ginger-alarm"

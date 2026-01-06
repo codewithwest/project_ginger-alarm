@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Ginger Alarm CLI wrapper
-APP_NAME="project_ginger-alarm"
+APP_NAME="ginger-alarm"
 
 # Try development mode first
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

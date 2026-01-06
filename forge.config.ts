@@ -17,6 +17,15 @@ const config: ForgeConfig = {
 
     // 3. Path to your icon (Forge handles the extension based on platform)
     icon: './assets/ginger-alarm-128x128.png',
+    ignore: (path: string) => {
+      // If the path is empty (root) or contains electron-updater, do NOT ignore it
+      if (!path || path.includes('node_modules/electron-updater')) {
+        return false;
+      }
+      // You can add other specific modules here if they fail too
+      return false;
+    },
+
 
     // 4. Don't set ignore - let Electron Forge Vite plugin handle it automatically
   },
@@ -32,6 +41,21 @@ const config: ForgeConfig = {
     new MakerDeb({
       options: {
         bin: 'ginger-alarm',
+        icon: './assets/ginger-alarm-128x128.png',
+        depends: [
+          'libnss3',
+          'libatk1.0-0',
+          'libatk-bridge2.0-0',
+          'libcups2',
+          'libgtk-3-0',
+          'libgbm1',
+          'libasound2'
+        ],
+        categories: ['Utility'],
+        genericName: 'Ginger Alarm',
+        productName: 'Ginger Alarm',
+        section: 'utils',
+        mimeType: ['x-scheme-handler/ginger-alarm'],
       },
     }),
   ],
