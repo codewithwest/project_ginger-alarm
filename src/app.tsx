@@ -10,6 +10,7 @@ import Settings from './pages/Settings';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Help from './pages/Help';
+import ReleaseNotes from './pages/ReleaseNotes';
 
 const App = (): JSX.Element => {
    return (
@@ -24,6 +25,7 @@ const App = (): JSX.Element => {
                <Route path="/privacy" element={<Privacy />} />
                <Route path="/terms" element={<Terms />} />
                <Route path="/help" element={<Help />} />
+               <Route path="/release-notes" element={<ReleaseNotes />} />
             </Routes>
          </Layout>
       </HashRouter>

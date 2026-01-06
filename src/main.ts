@@ -48,9 +48,11 @@ let mainWindow: BrowserWindow | null = null;
 
 function createTray() {
   try {
-    tray = new Tray(path.join(__dirname, '../renderer/main_window/favicon.ico'));
+    const iconPath = path.join(__dirname, '../../assets/ginger-alarm-16x16.png');
+    tray = new Tray(iconPath);
+    console.log('✓ Tray icon loaded');
   } catch (e) {
-    // Icon not found, skip tray
+    console.warn('Tray icon error:', e);
     return;
   }
 
@@ -312,6 +314,28 @@ ipcMain.handle('select-audio-file', async () => {
 ipcMain.handle('check-file-exists', (_event, filePath) => {
   if (!filePath) return false;
   return fs.existsSync(filePath);
+});
+
+// Get all release notes files
+ipcMain.handle('get-release-notes', async () => {
+  try {
+    const releaseDir = path.join(__dirname, '../../docs/release');
+    if (!fs.existsSync(releaseDir)) {
+      return [];
+    }
+    const files = fs.readdirSync(releaseDir).filter(f => f.endsWith('.md'));
+
+    const releases = files.map(file => {
+      const content = fs.readFileSync(path.join(releaseDir, file), 'utf-8');
+      return { filename: file, content };
+    });
+
+    // Sort by filename (newest first)
+    return releases.sort((a, b) => b.filename.localeCompare(a.filename));
+  } catch (e) {
+    console.error('Failed to read release notes:', e);
+    return [];
+  }
 });
 
 // Auto-update handlers
