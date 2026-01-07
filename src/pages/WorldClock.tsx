@@ -113,7 +113,7 @@ const WorldClock = () => {
 
    return (
       <div className="w-full max-w-6xl mx-auto">
-         <div className="flex justify-between items-center mb-8">
+         <div className="absolute fixed top-10 ml-30 flex justify-between items-center mb-8 z-50">
             <h2 className="text-3xl font-light tracking-widest uppercase flex items-center gap-3">
                <Globe2 size={32} className="text-primary" />
                World Clock

@@ -100,7 +100,7 @@ const Timer = () => {
    };
 
    return (
-      <div className="w-full h-full flex flex-col items-center">
+      <div className="w-full h-full flex flex-col items-center scrollbar-width-none">
          {/* Timer Display and Controls (Unchanged) */}
          <div className="relative w-64 h-64 flex flex-col items-center justify-center mb-8 mt-4">
             {/* ... SVG content ... */}

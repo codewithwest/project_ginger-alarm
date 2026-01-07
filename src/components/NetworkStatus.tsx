@@ -24,7 +24,7 @@ const NetworkStatus = () => {
    }, []);
 
    return (
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      <div className="fixed bottom-3 right-130 z-50 flex items-center gap-2">
          <span className={`block w-3 h-3 rounded-full shadow-md transition-colors duration-500 ${isOnline ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50'}`} />
          {/* Optional: <span className="text-xs text-white/50">{isOnline ? 'Online' : 'Offline'}</span> */}
       </div>

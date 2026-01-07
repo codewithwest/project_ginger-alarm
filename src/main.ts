@@ -81,6 +81,8 @@ function createWindow() {
     icon: path.join(__dirname, '../assets/ginger-alarm-128x128.png'),
     width: 1000,
     height: 920,
+    transparent: true,
+    frame: false,
     webPreferences: {
       // Vite provides this path automatically via the forge-vite plugin
       preload: path.join(__dirname, 'preload.js'),

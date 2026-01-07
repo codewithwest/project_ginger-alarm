@@ -14,21 +14,27 @@ import ReleaseNotes from './pages/ReleaseNotes';
 
 const App = (): JSX.Element => {
    return (
-      <HashRouter>
-         <Layout>
-            <Routes>
-               <Route path="/" element={<WorldClock />} />
-               <Route path="/alarms" element={<Alarms />} />
-               <Route path="/timer" element={<Timer />} />
-               <Route path="/stopwatch" element={<Stopwatch />} />
-               <Route path="/settings" element={<Settings />} />
-               <Route path="/privacy" element={<Privacy />} />
-               <Route path="/terms" element={<Terms />} />
-               <Route path="/help" element={<Help />} />
-               <Route path="/release-notes" element={<ReleaseNotes />} />
-            </Routes>
-         </Layout>
-      </HashRouter>
+      <div className="flex flex-col h-full w-full rounded-lg">
+         {/* This acts as your draggable handle */}
+         <div className="title-bar bg-transparent flex-none">
+            <span className="ml-4 text-xs text-gray-500">Ginger Alarm</span>
+         </div>
+         <HashRouter>
+            <Layout>
+               <Routes>
+                  <Route path="/" element={<WorldClock />} />
+                  <Route path="/alarms" element={<Alarms />} />
+                  <Route path="/timer" element={<Timer />} />
+                  <Route path="/stopwatch" element={<Stopwatch />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/help" element={<Help />} />
+                  <Route path="/release-notes" element={<ReleaseNotes />} />
+               </Routes>
+            </Layout>
+         </HashRouter>
+      </div>
    );
 };
 
