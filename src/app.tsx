@@ -16,8 +16,8 @@ const App = (): JSX.Element => {
    return (
       <div className="flex flex-col h-full w-full rounded-lg">
          {/* This acts as your draggable handle */}
-         <div className="title-bar bg-transparent flex-none">
-            <span className="ml-4 text-xs text-gray-500">Ginger Alarm</span>
+         <div className="h-24  flex-none d-flex">
+            <span className="text-xs text-gray-500">Ginger Alarm</span>
          </div>
          <HashRouter>
             <Layout>

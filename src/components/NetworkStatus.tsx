@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from "framer-motion";
+
 
 const NetworkStatus = () => {
    // 0 = offline, 1 = online (green), 2 = syncing/checking (yellow?) - sticking to red/green for now
@@ -24,10 +26,21 @@ const NetworkStatus = () => {
    }, []);
 
    return (
-      <div className="fixed bottom-3 right-130 z-50 flex items-center gap-2">
-         <span className={`block w-3 h-3 rounded-full shadow-md transition-colors duration-500 ${isOnline ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50'}`} />
-         {/* Optional: <span className="text-xs text-white/50">{isOnline ? 'Online' : 'Offline'}</span> */}
-      </div>
+
+      <motion.div 
+      animate={{ x: [-110, 90] }} // Moves between -20px and 20px relative to its position
+      transition={{ 
+         duration: 1.5, 
+         repeat: Infinity, 
+         repeatType: "mirror", // This creates the "back and forth" smooth loop
+         ease: "easeInOut" 
+      }}
+      className="fixed bottom-26 right-120 z-50 flex items-center gap-2"
+      >
+            <span className={`block w-3 h-3 rounded-full shadow-md transition-colors duration-500 
+         ${isOnline ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50'}`} />
+      {/* Optional: <span className="text-xs text-white/50">{isOnline ? 'Online' : 'Offline'}</span> */}
+      </motion.div>
    );
 };
 

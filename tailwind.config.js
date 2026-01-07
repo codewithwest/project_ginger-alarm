@@ -13,12 +13,17 @@ module.exports = {
          },
          animation: {
             'float': 'float 6s ease-in-out infinite',
+            'slide-right': 'slideRight 1s ease-out forwards',
          },
          keyframes: {
             float: {
                '0%, 100%': { transform: 'translateY(0)' },
                '50%': { transform: 'translateY(-20px)' },
-            }
+            },
+            slideRight: {
+               '0%': { transform: 'translateX(0)' },
+               '100%': { transform: 'translateX(100%)' },
+            },
          }
       },
    },
