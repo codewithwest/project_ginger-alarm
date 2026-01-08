@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
    selectAudioFile: () => ipcRenderer.invoke('select-audio-file'),
    checkFileExists: (path: string) => ipcRenderer.invoke('check-file-exists', path),
+   getGingerAlarmSounds: () => ipcRenderer.invoke('get-ginger-alarm-sounds'),
 
    getReleaseNotes: () => ipcRenderer.invoke('get-release-notes'),
 

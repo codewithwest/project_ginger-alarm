@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Volume2, Save, Pencil } from 'lucide-react';
+import { Plus, Trash2, Volume2, Save, Pencil, Play, Square, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const Alarms = () => {
    const [alarms, setAlarms] = useState<any[]>([]);
@@ -11,10 +11,14 @@ const Alarms = () => {
    const [fileMissing, setFileMissing] = useState(false);
 
    const [showForm, setShowForm] = useState(false);
+   const [availableSounds, setAvailableSounds] = useState<{ label: string; value: string }[]>([]);
+   const [showSoundPicker, setShowSoundPicker] = useState(false);
+   const [previewingSound, setPreviewingSound] = useState<string | null>(null);
    const audioRef = useRef<HTMLAudioElement | null>(null);
 
    useEffect(() => {
       loadAlarms();
+      loadSounds();
       if (Notification.permission !== 'granted') {
          Notification.requestPermission();
       }
@@ -75,6 +79,27 @@ const Alarms = () => {
       loadAlarms();
    };
 
+   const loadSounds = async () => {
+      const sounds = await window.electronAPI.getGingerAlarmSounds();
+      setAvailableSounds(sounds);
+   };
+
+   const togglePreview = (soundValue: string | null) => {
+      if (!soundValue || previewingSound === soundValue) {
+         if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+         }
+         setPreviewingSound(null);
+      } else {
+         setPreviewingSound(soundValue);
+         if (audioRef.current) {
+            audioRef.current.src = `./sounds/${soundValue}`;
+            audioRef.current.play();
+         }
+      }
+   };
+
    return (
       <div className="no-scrollbar w-full max-w-5xl mx-auto h-full overflow-hidden">
          <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
@@ -111,31 +136,15 @@ const Alarms = () => {
                   <div className="flex-1">
                      <label className="text-xs text-gray-400 block mb-1">Sound</label>
                      <div className="flex gap-2">
-                        <select
-                           value={newSound.startsWith('/') ? 'custom' : newSound}
-                           onChange={async e => {
-                              if (e.target.value === 'custom') {
-                                 // Trigger browse when selecting 'Custom File'
-                                 try {
-                                    const file = await window.electronAPI.selectAudioFile();
-                                    if (file) {
-                                       setNewSound(file);
-                                       setFileMissing(false);
-                                    }
-                                 } catch (err) {
-                                    console.error("Browse failed:", err);
-                                 }
-                                 return;
-                              }
-                              setNewSound(e.target.value);
-                              setFileMissing(false);
-                           }}
-                           className="flex-1 bg-black/20 rounded-lg p-2 outline-none focus:ring-1 focus:ring-primary h-10 text-white appearance-none cursor-pointer hover:bg-black/30 transition-colors"
+                        <button
+                           onClick={() => setShowSoundPicker(true)}
+                           className="flex-1 bg-black/20 rounded-lg p-2 outline-none focus:ring-1 focus:ring-primary h-10 text-white text-left px-3 hover:bg-black/30 transition-colors flex items-center justify-between"
                         >
-                           <option value="alarm.mp3">Classic Alarm</option>
-                           <option value="alarm.ogg">Digital Beep</option>
-                           <option value="custom">Custom File {newSound.startsWith('/') ? '(Selected)' : ''}</option>
-                        </select>
+                           <span className="truncate">
+                              {newSound.startsWith('/') ? 'External File' : availableSounds.find(s => s.value === newSound)?.label || newSound}
+                           </span>
+                           <Volume2 size={16} className="text-gray-400" />
+                        </button>
                         <button
                            onClick={async () => {
                               try {
@@ -149,7 +158,7 @@ const Alarms = () => {
                               }
                            }}
                            className="bg-white/10 hover:bg-white/20 p-2 rounded-lg text-sm truncate max-w-[100px] flex items-center justify-center transition-colors"
-                           title={newSound.startsWith('/') ? newSound : "Browse"}
+                           title={newSound.startsWith('/') ? newSound : "BrowseExternal"}
                         >
                            {newSound.startsWith('/') ? '...' + newSound.slice(-10) : 'Browse'}
                         </button>
@@ -204,6 +213,125 @@ const Alarms = () => {
                </motion.div>
             ))}
          </div>
+
+         {showSoundPicker && (
+            <SoundPicker
+               sounds={availableSounds}
+               selectedSound={newSound}
+               onSelect={(sound: string) => {
+                  setNewSound(sound);
+                  setShowSoundPicker(false);
+                  togglePreview(null); // Stop sound on select
+                  setFileMissing(false);
+               }}
+               onClose={() => {
+                  setShowSoundPicker(false);
+                  togglePreview(null); // Stop sound on close
+               }}
+               previewingSound={previewingSound}
+               onTogglePreview={togglePreview}
+            />
+         )}
+
+         <audio ref={audioRef} onEnded={() => setPreviewingSound(null)} />
+      </div>
+   );
+};
+
+const SoundPicker = ({
+   sounds, selectedSound, onSelect, onClose, previewingSound, onTogglePreview
+}: any) => {
+   const [page, setPage] = useState(0);
+   const itemsPerPage = 8;
+   const totalPages = Math.ceil(sounds.length / itemsPerPage);
+   const currentPageSounds = sounds.slice(page * itemsPerPage, (page + 1) * itemsPerPage);
+
+   // Safety reset if page is out of bounds (e.g. sounds filtered)
+   useEffect(() => {
+      if (page >= totalPages && totalPages > 0) {
+         setPage(totalPages - 1);
+      }
+   }, [sounds.length, totalPages, page]);
+
+   return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+         <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+         />
+         <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-[#1A1A1A] border border-white/10 w-full max-w-md rounded-3xl p-6 relative overflow-hidden shadow-2xl"
+         >
+            <div className="flex items-center justify-between mb-6">
+               <h3 className="text-xl font-light tracking-widest uppercase">Select Sound</h3>
+               <button type="button" onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors text-gray-400 hover:text-white">
+                  <X size={20} />
+               </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-6 min-h-[224px]">
+               {currentPageSounds.map((sound: any) => (
+                  <div
+                     key={sound.value}
+                     onClick={() => onSelect(sound.value)}
+                     className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2 relative group 
+                        ${selectedSound === sound.value ? 'bg-primary/20 border-primary shadow-[0_0_15px_rgba(99,102,241,0.2)]' :
+                           'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20'}`}
+                  >
+                     <span className="text-sm font-medium truncate pr-8">{sound.label}</span>
+                     <button
+                        type="button"
+                        onClick={(e) => {
+                           e.stopPropagation();
+                           onTogglePreview(sound.value);
+                        }}
+                        className={`absolute top-3 right-3 p-1.5 rounded-full transition-all ${previewingSound === sound.value ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white/10 text-gray-400 group-hover:scale-110 group-hover:bg-white/20 group-hover:text-white'}`}
+                     >
+                        {previewingSound === sound.value ? <Square size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" />}
+                     </button>
+                     <div className="text-[10px] text-gray-500 uppercase tracking-tighter">System Sound</div>
+                  </div>
+               ))}
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-white/5">
+               <div className="flex gap-2">
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                     <button
+                        key={i}
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPage(i); }}
+                        className="group p-1.5 -m-1.5"
+                        title={`Page ${i + 1}`}
+                     >
+                        <div className={`w-2 h-2 rounded-full transition-all group-hover:bg-white/40 ${page === i ? 'bg-primary w-5' : 'bg-white/20'}`} />
+                     </button>
+                  ))}
+               </div>
+               <div className="flex gap-2">
+                  <button
+                     type="button"
+                     disabled={page === 0}
+                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPage(p => Math.max(0, p - 1)); }}
+                     className="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  >
+                     <ChevronLeft size={20} />
+                  </button>
+                  <button
+                     type="button"
+                     disabled={page >= totalPages - 1}
+                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPage(p => Math.min(totalPages - 1, p + 1)); }}
+                     className="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  >
+                     <ChevronRight size={20} />
+                  </button>
+               </div>
+            </div>
+         </motion.div>
       </div>
    );
 };

@@ -23,6 +23,7 @@ export interface IElectronAPI {
 
    selectAudioFile: () => Promise<string | null>;
    checkFileExists: (path: string) => Promise<boolean>;
+   getGingerAlarmSounds: () => Promise<{ label: string; value: string }[]>;
 
    getReleaseNotes: () => Promise<Array<{ filename: string; content: string }>>;
 

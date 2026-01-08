@@ -211,8 +211,8 @@ initDB();
 // Sync Logic
 let syncInterval: NodeJS.Timeout;
 let appSettings = {
-  serverUrl: 'http://localhost:3000',
-  syncId: 'default-user'
+  serverUrl: process.env.SERVER_URL || 'http://localhost:3000',
+  syncId: process.env.SYNC_ID || 'default-user'
 };
 
 const performSync = async (serverUrl: string, syncId: string) => {
@@ -308,7 +308,7 @@ ipcMain.handle('sync-data', (_event, serverUrl, syncId) => {
 ipcMain.handle('select-audio-file', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ['openFile'],
-    filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'ogg'] }]
+    filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'wma', 'mp4', 'webm', 'ogg', 'wav'] }]
   });
   if (canceled) return null;
   return filePaths[0];
@@ -317,6 +317,30 @@ ipcMain.handle('select-audio-file', async () => {
 ipcMain.handle('check-file-exists', (_event, filePath) => {
   if (!filePath) return false;
   return fs.existsSync(filePath);
+});
+
+ipcMain.handle('get-ginger-alarm-sounds', async () => {
+  try {
+    const soundsDir = path.join(__dirname, '../../public/sounds');
+    if (!fs.existsSync(soundsDir)) {
+      console.warn('Sounds directory not found:', soundsDir);
+      return [];
+    }
+    const files = fs.readdirSync(soundsDir);
+    return files
+      .filter(file => /\.(mp3|wav|ogg|m4a|aac|flac|wma)$/i.test(file))
+      .map(file => {
+        let label = file.replace(/\.[^/.]+$/, ""); // Remove extension
+        label = label.replace(/^mixkit-/i, ""); // Remove mixkit- prefix
+        label = label.replace(/(?:-|\s)\d+$/, ""); // Remove trailing numbers like -1004
+        label = label.replace(/\s?\(\d+\)$/, ""); // Remove (1) suffixes
+        label = label.replace(/[-_]/g, ' ').trim(); // Replace dashes/underscores with spaces
+        return { label, value: file };
+      });
+  } catch (e: any) {
+    console.error('Failed to list sounds:', e);
+    return [];
+  }
 });
 
 // Get all release notes files
