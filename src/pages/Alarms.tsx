@@ -76,8 +76,8 @@ const Alarms = () => {
    };
 
    return (
-      <div className="w-full max-w-5xl mx-auto">
-         <div className="absolute fixed top-10 ml-40 flex justify-between items-center mb-8 z-50">
+      <div className="no-scrollbar w-full max-w-5xl mx-auto h-full overflow-hidden">
+         <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
             <h2 className="text-3xl font-light tracking-widest uppercase">Alarms</h2>
             {!showForm && (
                <button
@@ -168,7 +168,7 @@ const Alarms = () => {
             </motion.div>
          )}
 
-         <div className="space-y-4 max-h-[50vh] overflow-y-auto scrollbar-thin pr-1">
+         <div className="no-scrollbar mt-10 space-y-2 h-full overflow-y-scroll scrollbar-thin pr-1">
             {alarms.map((alarm) => (
                <motion.div
                   key={alarm.id}

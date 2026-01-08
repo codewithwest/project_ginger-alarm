@@ -18,7 +18,8 @@ const CityClock = ({ city, zone, onDelete }: { city: string; zone: string; onDel
          initial={{ opacity: 0, y: 20 }}
          animate={{ opacity: 1, y: 0 }}
          whileHover={{ scale: 1.05, rotateX: 5 }}
-         className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center aspect-square transition-all preserve-3d group relative"
+         className="bg-white/10 backdrop-blur-md border border-white/20 p-6 
+         rounded-2xl shadow-xl flex flex-col items-center justify-center aspect-square transition-all preserve-3d group relative"
       >
          {onDelete && (
             <button
@@ -113,8 +114,9 @@ const WorldClock = () => {
 
    return (
       <div className="w-full max-w-6xl mx-auto">
-         <div className="absolute fixed top-10 ml-30 flex justify-between items-center mb-8 z-50">
-            <h2 className="text-3xl font-light tracking-widest uppercase flex items-center gap-3">
+         <div className="flex justify-center items-center mb-8 px-4 w-full">
+            <h2 className="absolute flex-row-reverse gap-3 text-3xl font-light 
+            tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
                <Globe2 size={32} className="text-primary" />
                World Clock
             </h2>
@@ -132,7 +134,7 @@ const WorldClock = () => {
             <motion.div
                initial={{ opacity: 0, height: 0 }}
                animate={{ opacity: 1, height: 'auto' }}
-               className="bg-white/5 p-6 rounded-xl border border-white/10 mb-8 overflow-hidden"
+               className="bg-white/5 p-6 rounded-xl border border-white/10 mb-8 overflow-hidden w-[90%] mx-auto"
             >
                <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-medium">Add Custom Timezone</h3>

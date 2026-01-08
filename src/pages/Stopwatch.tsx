@@ -27,8 +27,13 @@ const Stopwatch = () => {
    };
 
    return (
-      <div className="w-full max-w-xl mx-auto flex flex-col items-center">
-         <div className="text-8xl font-mono font-bold mb-12 drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+      <div className="w-full h-full max-w-xl mx-auto flex flex-col items-center">
+         <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase 
+           top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
+                     <h2 className="text-3xl font-light tracking-widest uppercase">Alarms</h2>
+                   
+                  </div>
+         <div className="text-8xl font-mono font-bold mt-20 drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
             {formatTime(time)}
          </div>
 

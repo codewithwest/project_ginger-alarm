@@ -95,7 +95,7 @@ const AlarmManager = () => {
                initial={{ opacity: 0, scale: 0.5 }}
                animate={{ opacity: 1, scale: 1 }}
                exit={{ opacity: 0, scale: 0.5 }}
-               className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm scrollbar-hide"
+               className=" inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm scrollbar-width-none"
             >
                <div className="bg-gray-900 border border-t-white/20 border-b-black/40 border-x-white/10 rounded-3xl p-8 w-80 shadow-[0_0_50px_rgba(255,0,0,0.4)] flex flex-col items-center">
                   <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mb-6 animate-pulse">

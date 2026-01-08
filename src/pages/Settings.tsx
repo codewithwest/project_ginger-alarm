@@ -41,12 +41,13 @@ const Settings = () => {
    };
 
    return (
-      <div className="w-full max-w-2xl mx-auto">
-         <div className="flex justify-between items-center mb-8">
+      <div className="w-full h-full max-w-2xl mx-auto flex items-center justify-center ">
+          <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
             <h2 className="text-3xl font-light tracking-widest uppercase">Settings</h2>
+           
          </div>
 
-         <div className="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-6">
+         <div className="bg-white/5 p-6 rounded-2xl w-full border items-center border-white/10 space-y-6 m-auto">
             <div className="space-y-2">
                <label className="text-sm text-gray-400 flex items-center gap-2">
                   <Server size={16} /> Backend Server URL

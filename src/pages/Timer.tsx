@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
 import { Play, Pause, RotateCcw, Save, Trash2, Plus, X, PenIcon } from 'lucide-react';
 import clsx from 'clsx';
@@ -101,8 +102,11 @@ const Timer = () => {
 
    return (
       <div className="w-full h-full flex flex-col items-center scrollbar-width-none">
-         {/* Timer Display and Controls (Unchanged) */}
-         <div className="relative w-64 h-64 flex flex-col items-center justify-center mb-8 mt-4">
+           <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
+                     <h2 className="text-3xl font-light tracking-widest uppercase">Timer</h2>
+                  </div>
+         {/* Timer Display and Controls */}
+         <div className="relative w-64 h-64 flex flex-col items-center justify-center mb-2 mt-4">
             {/* ... SVG content ... */}
             <div className="absolute inset-0 rounded-full border-4 border-white/10" />
             <svg className="absolute inset-0 w-full h-full -rotate-90 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
@@ -125,7 +129,7 @@ const Timer = () => {
             <div className="text-sm text-gray-400 mt-2 z-10 uppercase tracking-widest">{currentTimerLabel}</div>
          </div>
 
-         <div className="flex gap-4 mb-8">
+         <div className="flex gap-4 mb-2">
             <button
                onClick={() => setIsRunning(!isRunning)}
                className={clsx(
@@ -144,7 +148,7 @@ const Timer = () => {
          </div>
 
          {/* Saved Timers & Add Button */}
-         <div className="w-full max-w-sm mb-4">
+         <div className="w-full max-w-sm mb-2">
             <div className="flex justify-between items-center mb-2">
                <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Saved Timers</h3>
                {!showForm && (
@@ -158,12 +162,20 @@ const Timer = () => {
             </div>
 
             {!showForm && (
-               <div className="grid grid-cols-2 gap-3 h-32 overflow-y-auto pr-2 scrollbar-thin">
+               <div className=" no-scrollbar grid grid-cols-2 gap-3 
+               h-34 overflow-y-auto pr-2 scrollbar-thin 
+               shadow-[inset_0px_-7px_10px_-12px_rgba(255,0,0,0.5)]
+
+
+               ">
                   {timers.map((timer) => (
                      <div
                         key={timer.id}
                         onClick={() => setCustomTimer(timer.duration, timer.label)}
-                        className={`bg-white/5 hover:bg-white/10 p-2 rounded-lg flex items-center justify-between group cursor-pointer border border-white/5 transition-colors ${editingId === timer.id ? 'border-primary ring-1 ring-primary' : ''}`}
+                        className={`bg-white/5 hover:bg-white/10 p-2 rounded-lg 
+                           flex items-center justify-between group cursor-pointer
+                           h-[1/2]
+                           border border-white/5 transition-colors ${editingId === timer.id ? 'border-primary ring-1 ring-primary' : ''}`}
                      >
                         <div className="flex flex-col gap-2">
                            <span className="flex-1 text-sm">{timer.label}</span>
@@ -180,74 +192,93 @@ const Timer = () => {
                         </div>
                      </div>
                   ))}
+                  {/* <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t 
+                  from-gray-200 to-transparent pointer-events-none"></div> */}
                </div>
             )}
          </div>
 
-         {/* Custom Input Form */}
-         {showForm && (
-            <motion.div
-               initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }}
-               className="w-full max-w-sm bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 flex flex-col gap-4 mb-6 relative"
-            >
-               <button
-                  onClick={resetForm}
-                  className="absolute top-2 right-2 text-gray-400 hover:text-white"
-               >
-                  <X size={16} />
-               </button>
-
-               <h4 className="text-sm font-medium text-center mb-2">{editingId ? 'Edit Timer' : 'Set Custom Timer'}</h4>
-
-               <div className="flex flex-col gap-1 mb-2">
-                  <label className="text-xs text-gray-400">Label</label>
-                  <input
-                     type="text"
-                     value={customLabel}
-                     onChange={(e) => setCustomLabel(e.target.value)}
-                     className="bg-black/40 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-secondary"
-                     placeholder="Timer Name"
+         {/* Custom Input Form - Modal Design */}
+         <AnimatePresence>
+            {showForm && (
+               <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                  {/* Backdrop */}
+                  <motion.div
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     exit={{ opacity: 0 }}
+                     onClick={resetForm}
+                     className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                   />
-               </div>
-
-               <div className="flex items-end justify-center gap-2">
-                  <div className="flex flex-col">
-                     <label className="text-xs text-gray-400 mb-1">Min</label>
-                     <input
-                        type="number"
-                        value={customMins}
-                        onChange={(e) => setCustomMins(parseInt(e.target.value) || 0)}
-                        className="bg-black/40 rounded-lg p-2 text-center w-20 outline-none focus:ring-1 focus:ring-secondary"
-                     />
-                  </div>
-                  <div className="flex flex-col">
-                     <label className="text-xs text-gray-400 mb-1">Sec</label>
-                     <input
-                        type="number"
-                        value={customSecs}
-                        onChange={(e) => setCustomSecs(parseInt(e.target.value) || 0)}
-                        className="bg-black/40 rounded-lg p-2 text-center w-20 outline-none focus:ring-1 focus:ring-secondary"
-                     />
-                  </div>
-               </div>
-
-               <div className="flex gap-2 mt-2">
-                  <button
-                     onClick={handleSet}
-                     className="flex-1 bg-white/10 hover:bg-white/20 p-2 rounded-lg text-sm"
+                  
+                  <motion.div
+                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                     animate={{ opacity: 1, scale: 1, y: 0 }}
+                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                     className="w-full max-w-sm bg-gray-900/90 backdrop-blur-xl p-6 rounded-2xl border border-white/10 flex flex-col gap-4 shadow-2xl relative z-10"
                   >
-                     Set Only
-                  </button>
-                  <button
-                     onClick={saveTimer}
-                     className="flex-1 bg-secondary/80 hover:bg-secondary p-2 rounded-lg text-sm flex items-center justify-center gap-2"
-                  >
-                     <Save size={16} /> {editingId ? 'Update' : 'Save'}
-                  </button>
+                     <button
+                        onClick={resetForm}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                     >
+                        <X size={20} />
+                     </button>
+
+                     <h4 className="text-lg font-bold text-center mb-2 tracking-tight">
+                        {editingId ? 'Edit Timer' : 'Set Custom Timer'}
+                     </h4>
+
+                     <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold ml-1">Label</label>
+                        <input
+                           type="text"
+                           value={customLabel}
+                           autoFocus
+                           onChange={(e) => setCustomLabel(e.target.value)}
+                           className="bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                           placeholder="Timer Name"
+                        />
+                     </div>
+
+                     <div className="flex items-end justify-center gap-4 py-2">
+                        <div className="flex flex-col gap-1.5">
+                           <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold text-center">Min</label>
+                           <input
+                              type="number"
+                              value={customMins}
+                              onChange={(e) => setCustomMins(parseInt(e.target.value) || 0)}
+                              className="bg-white/5 border border-white/10 rounded-xl p-3 text-center w-24 text-lg font-mono outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                           />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                           <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold text-center">Sec</label>
+                           <input
+                              type="number"
+                              value={customSecs}
+                              onChange={(e) => setCustomSecs(parseInt(e.target.value) || 0)}
+                              className="bg-white/5 border border-white/10 rounded-xl p-3 text-center w-24 text-lg font-mono outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                           />
+                        </div>
+                     </div>
+
+                     <div className="flex gap-3 mt-4">
+                        <button
+                           onClick={handleSet}
+                           className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
+                        >
+                           Set Only
+                        </button>
+                        <button
+                           onClick={saveTimer}
+                           className="flex-1 bg-primary hover:bg-primary/90 p-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95"
+                        >
+                           <Save size={18} /> {editingId ? 'Update' : 'Save'}
+                        </button>
+                     </div>
+                  </motion.div>
                </div>
-            </motion.div>
-         )}
+            )}
+         </AnimatePresence>
       </div>
    );
 };

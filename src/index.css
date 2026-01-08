@@ -7,17 +7,15 @@ body {
 }
 
 #root {
-  width: 100dvw;
+  width: 94dvw;
   height: 100dvh;
   border-radius: 100%;
   overflow: hidden;
-  border: 1px solid #333;
-
   /* Apply a shadow so the rounded window has depth */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-
   /* 2026 Squircle Smoothing */
   -electron-corner-smoothing: system-ui;
+  /* Calculate max dimensions to fit 16:9 within the viewport */
 }
 
 .title-bar {
@@ -40,4 +38,30 @@ body {
 
 .backface-hidden {
   backface-visibility: hidden;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.page-name {
+  position: absolute;
+  top: 11px;
+  z-index: 10;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-left: 1rem;
+  width: 100%;
 }

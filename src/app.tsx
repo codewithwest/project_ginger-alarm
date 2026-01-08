@@ -14,11 +14,8 @@ import ReleaseNotes from './pages/ReleaseNotes';
 
 const App = (): JSX.Element => {
    return (
-      <div className="flex flex-col h-full w-full rounded-lg">
-         {/* This acts as your draggable handle */}
-         <div className="h-24  flex-none d-flex">
-            <span className="text-xs text-gray-500">Ginger Alarm</span>
-         </div>
+      // <div className="flex h-full w-full">
+      //    {/* Glass Title Bar */}
          <HashRouter>
             <Layout>
                <Routes>
@@ -34,7 +31,6 @@ const App = (): JSX.Element => {
                </Routes>
             </Layout>
          </HashRouter>
-      </div>
    );
 };
 
