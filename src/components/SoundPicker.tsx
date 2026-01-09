@@ -124,7 +124,6 @@ const SoundPicker = ({
                <div className="flex gap-1 z-10">
                   {Array.from({ length: totalPages }).map((_, i) => {
                      const isActive = page === i;
-                     console.log(isActive);
 
                      return (
                         <button

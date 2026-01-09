@@ -18,8 +18,8 @@ const CityClock = ({ city, zone, onDelete }: { city: string; zone: string; onDel
          initial={{ opacity: 0, y: 20 }}
          animate={{ opacity: 1, y: 0 }}
          whileHover={{ scale: 1.05, rotateX: 5 }}
-         className="bg-white/10 backdrop-blur-md border border-white/20 p-6 w-[200px] h-[200px]
-         rounded-2xl shadow-xl flex flex-col items-center justify-center aspect-square transition-all preserve-3d group relative"
+         className="bg-white/10 backdrop-blur-md border border-white/20 p-2 w-[100%/2] h-[100%/2]
+         rounded-2xl shadow-xl flex flex-col items-center justify-center aspect-square transition-all preserve-3d"
       >
          {onDelete && (
             <button
@@ -113,8 +113,8 @@ const WorldClock = () => {
    };
 
    return (
-      <div className="w-full max-w-6xl mx-auto">
-         <div className="flex justify-center items-center mb-8 px-4 w-full">
+      <div className="w-[90%] max-w-6xl mx-auto h-[90%]">
+         <div className="flex justify-center items-center mb-4 px-4 w-full">
             <h2 className="absolute flex-row-reverse gap-3 text-3xl font-light 
             tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
                <Globe2 size={32} className="text-primary" />
@@ -123,7 +123,7 @@ const WorldClock = () => {
             {!showForm && (
                <button
                   onClick={() => setShowForm(true)}
-                  className="bg-primary/80 hover:bg-primary text-white p-3 rounded-full shadow-lg hover:shadow-primary/50 transition-all active:scale-95"
+                  className="relative bg-primary/80 hover:bg-primary text-white p-3 rounded-full shadow-lg hover:shadow-primary/50 transition-all active:scale-95"
                >
                   <Plus size={20} />
                </button>
@@ -134,7 +134,7 @@ const WorldClock = () => {
             <motion.div
                initial={{ opacity: 0, height: 0 }}
                animate={{ opacity: 1, height: 'auto' }}
-               className="bg-white/5 p-6 rounded-xl border border-white/10 mb-8 overflow-hidden w-[90%] mx-auto"
+               className="bg-white/5 p-4 rounded-xl border border-white/10 mb-8 overflow-hidden w-[90%] mx-auto"
             >
                <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-medium">Add Custom Timezone</h3>
@@ -238,7 +238,7 @@ const WorldClock = () => {
             </motion.div>
          )}
 
-         <div className="flex flex-wrap gap-6 opacity-90 h-full overflow-y-auto no-scrollbar">
+         <div className="grid grid-cols-3 gap-2 opacity-90 h-full w-full overflow-y-auto no-scrollbar">
             {clocks.map(clock => (
                <CityClock
                   key={clock.id}

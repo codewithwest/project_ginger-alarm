@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Ban } from 'lucide-react';
+import { Bell, Ban } from 'lucide-react';
 
 const AlarmManager = () => {
    const [alarms, setAlarms] = useState<any[]>([]);
@@ -19,8 +19,6 @@ const AlarmManager = () => {
 
    const loadAlarms = async () => {
       const data = await window.electronAPI.getAlarms();
-      // Only update if length changed or we want deeper comparison, 
-      // but React state update is cheap enough for small lists.
       setAlarms(data);
    };
 
@@ -35,6 +33,7 @@ const AlarmManager = () => {
 
          alarms.forEach(alarm => {
             if (alarm.active && alarm.time === currentTime && now.getSeconds() === 0) {
+               console.log(alarm);
                triggerAlarm(alarm);
             }
          });
@@ -44,14 +43,14 @@ const AlarmManager = () => {
 
    const triggerAlarm = async (alarm: any) => {
       setRingingAlarm(alarm);
-      let soundPath = alarm.sound ? (alarm.sound.startsWith('/') ? `file://${alarm.sound}` : `/sounds/${alarm.sound}`) : '/sounds/alarm.mp3';
+      let soundPath = alarm.sound ? (alarm.sound.startsWith('/') ? `file://${alarm.sound}` : `/sounds/${alarm.sound}`) : '/sounds/default.ogg';
 
       // If custom file, check if it exists, otherwise fallback
       if (alarm.sound && alarm.sound.startsWith('/')) {
          const exists = await window.electronAPI.checkFileExists(alarm.sound);
          if (!exists) {
             console.warn(`Custom sound file missing: ${alarm.sound}. Using default.`);
-            soundPath = '/sounds/alarm.mp3';
+            soundPath = '/sounds/default.ogg';
          }
       }
 
@@ -62,12 +61,12 @@ const AlarmManager = () => {
 
       const audio = new Audio(soundPath);
       audio.volume = 0.75;
-      audio.loop = true; // Alarm should loop until stopped
+      audio.loop = true;
 
       audio.onerror = () => {
          console.error(`Error playing sound: ${soundPath}. Falling back to default.`);
-         if (soundPath !== '/sounds/alarm.mp3') {
-            audio.src = '/sounds/alarm.mp3';
+         if (soundPath !== '/sounds/default.ogg') {
+            audio.src = '/sounds/default.ogg';
             audio.play();
          }
       };
@@ -95,7 +94,7 @@ const AlarmManager = () => {
                initial={{ opacity: 0, scale: 0.5 }}
                animate={{ opacity: 1, scale: 1 }}
                exit={{ opacity: 0, scale: 0.5 }}
-               className=" inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm scrollbar-width-none"
+               className="inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm scrollbar-width-none"
             >
                <div className="bg-gray-900 border border-t-white/20 border-b-black/40 border-x-white/10 rounded-3xl p-8 w-80 shadow-[0_0_50px_rgba(255,0,0,0.4)] flex flex-col items-center">
                   <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mb-6 animate-pulse">

@@ -190,7 +190,7 @@ const Alarms = () => {
             </motion.div>
          )}
 
-         <div className="no-scrollbar mt-2 space-y-2 h-full overflow-y-scroll scrollbar-thin">
+         <div className="no-scrollbar mt-2 space-y-2 h-full w-full overflow-y-scroll scrollbar-thin flex flex-col justify-center">
             {alarms.map((alarm) => (
                <motion.div
                   key={alarm.id}
