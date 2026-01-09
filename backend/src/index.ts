@@ -4,12 +4,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { Alarm } from './models/Alarm';
 import { Timer } from './models/Timer';
+import { User } from './models/User';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/ginger-alarm';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27018/ginger-alarm';
 
 app.use(cors());
 app.use(express.json());
@@ -27,6 +28,13 @@ app.post('/api/sync', async (req, res) => {
       if (!syncId) {
          return res.status(400).json({ error: 'Sync ID is required' });
       }
+
+      // Ensure user exists (Registers user on first sync)
+      await User.findOneAndUpdate(
+         { syncId },
+         { $setOnInsert: { syncId } },
+         { upsert: true, new: true }
+      );
 
       // Clear existing data for this syncId (Simple full sync strategy)
       // In a production app, you might want more complex diffing

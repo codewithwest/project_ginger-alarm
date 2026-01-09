@@ -10,9 +10,9 @@ export interface IElectronAPI {
    updateAlarm: (id: number, time: string, label: string, sound: string) => Promise<void>;
 
    getTimers: () => Promise<any[]>;
-   addTimer: (duration: number, label: string) => Promise<any>;
+   addTimer: (duration: number, label: string, sound: string) => Promise<any>;
    deleteTimer: (id: number) => Promise<any>;
-   updateTimer: (id: number, duration: number, label: string) => Promise<any>;
+   updateTimer: (id: number, duration: number, label: string, sound: string) => Promise<any>;
 
    getWorldClocks: () => Promise<any[]>;
    addWorldClock: (city: string, timezone: string, removable: number) => Promise<any>;
@@ -31,8 +31,9 @@ export interface IElectronAPI {
    onUpdateAvailable: (callback: () => void) => void;
    onUpdateDownloaded: (callback: () => void) => void;
 
-   getSettings: () => Promise<SettingsDTO[]>;
+   getSettings: () => Promise<any>;
    updateSettings: (settings: SettingsDTO) => Promise<void>;
+   getSettingsBySyncId: (syncId: string) => Promise<any>;
    addSettings: (settings: SettingsDTO) => Promise<void>;
    deleteSettings: (id: number) => Promise<void>;
 }

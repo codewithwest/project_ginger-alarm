@@ -13,9 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
    updateAlarm: (id: number, time: string, label: string, sound: string) => ipcRenderer.invoke('update-alarm', id, time, label, sound),
 
    getTimers: () => ipcRenderer.invoke('get-timers'),
-   addTimer: (duration: number, label: string) => ipcRenderer.invoke('add-timer', duration, label),
+   addTimer: (duration: number, label: string, sound: string) => ipcRenderer.invoke('add-timer', duration, label, sound),
    deleteTimer: (id: number) => ipcRenderer.invoke('delete-timer', id),
-   updateTimer: (id: number, duration: number, label: string) => ipcRenderer.invoke('update-timer', id, duration, label),
+   updateTimer: (id: number, duration: number, label: string, sound: string) => ipcRenderer.invoke('update-timer', id, duration, label, sound),
 
    getWorldClocks: () => ipcRenderer.invoke('get-worldclocks'),
    addWorldClock: (city: string, timezone: string, removable: number) => ipcRenderer.invoke('add-worldclock', city, timezone, removable),
@@ -36,4 +36,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
    // Settings
    updateSettings: (settings: SettingsDTO) => ipcRenderer.invoke('update-settings', settings),
    syncData: (serverUrl: string, syncId: string) => ipcRenderer.invoke('sync-data', serverUrl, syncId),
+   getSettingsBySyncId: (syncId: string) => ipcRenderer.invoke('get-settings-by-sync-id', syncId),
 });
