@@ -18,7 +18,7 @@ const CityClock = ({ city, zone, onDelete }: { city: string; zone: string; onDel
          initial={{ opacity: 0, y: 20 }}
          animate={{ opacity: 1, y: 0 }}
          whileHover={{ scale: 1.05, rotateX: 5 }}
-         className="bg-white/10 backdrop-blur-md border border-white/20 p-6 
+         className="bg-white/10 backdrop-blur-md border border-white/20 p-6 w-[200px] h-[200px]
          rounded-2xl shadow-xl flex flex-col items-center justify-center aspect-square transition-all preserve-3d group relative"
       >
          {onDelete && (
@@ -238,7 +238,7 @@ const WorldClock = () => {
             </motion.div>
          )}
 
-         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 opacity-90">
+         <div className="flex flex-wrap gap-6 opacity-90 h-full overflow-y-auto no-scrollbar">
             {clocks.map(clock => (
                <CityClock
                   key={clock.id}

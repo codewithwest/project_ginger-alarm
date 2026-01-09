@@ -102,9 +102,9 @@ const Timer = () => {
 
    return (
       <div className="w-full h-full flex flex-col items-center scrollbar-width-none">
-           <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
-                     <h2 className="text-3xl font-light tracking-widest uppercase">Timer</h2>
-                  </div>
+         <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
+            <h2 className="text-3xl font-light tracking-widest uppercase">Timer</h2>
+         </div>
          {/* Timer Display and Controls */}
          <div className="relative w-64 h-64 flex flex-col items-center justify-center mb-2 mt-4">
             {/* ... SVG content ... */}
@@ -162,7 +162,7 @@ const Timer = () => {
             </div>
 
             {!showForm && (
-               <div className=" no-scrollbar grid grid-cols-2 gap-3 
+               <div className="no-scrollbar grid grid-cols-2 gap-3 
                h-34 overflow-y-auto pr-2 scrollbar-thin 
                shadow-[inset_0px_-7px_10px_-12px_rgba(255,0,0,0.5)]
 
@@ -210,7 +210,7 @@ const Timer = () => {
                      onClick={resetForm}
                      className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                   />
-                  
+
                   <motion.div
                      initial={{ opacity: 0, scale: 0.9, y: 20 }}
                      animate={{ opacity: 1, scale: 1, y: 0 }}
