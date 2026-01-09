@@ -1,37 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, Server, Save } from 'lucide-react';
+import { SettingsDTO } from 'src/shared/ipc';
 
 const Settings = () => {
-   const [serverUrl, setServerUrl] = useState('http://localhost:3000');
-   const [syncId, setSyncId] = useState('user-default');
+   const [serverUrl, setServerUrl] = useState(' ');
+   const [syncId, setSyncId] = useState(' ');
    const [isSyncing, setIsSyncing] = useState(false);
    const [lastSync, setLastSync] = useState<string | null>(null);
 
    useEffect(() => {
       // Load settings from local storage or IPC if you had a settings store
       // For now, we'll just use local state defaults or localStorage
-      const savedUrl = localStorage.getItem('serverUrl');
-      const savedSyncId = localStorage.getItem('syncId');
-      if (savedUrl) setServerUrl(savedUrl);
-      if (savedSyncId) setSyncId(savedSyncId);
+      try {
+         const settings: Promise<SettingsDTO[]> = window.electronAPI.getSettings()
+         console.log("Settings loaded", settings);
+         Promise.resolve(settings).then((settings) => {
+            if (Array.isArray(settings)) {
+               setServerUrl(settings[0].serverUrl);
+               setSyncId(settings[0].syncId);
+            }
+         })
+      } catch (error) {
+         console.error("Error loading settings", error);
+      }
+
    }, []);
 
-   const handleSave = () => {
-      localStorage.setItem('serverUrl', serverUrl);
-      localStorage.setItem('syncId', syncId);
-      // Notify main process about settings update if needed
-      window.electronAPI.updateSettings(serverUrl, syncId);
+   const handleSave = async () => {
+      console.log("Saving settings", { serverUrl, syncId });
+      await window.electronAPI.updateSettings({ serverUrl, syncId });
    };
 
    const handleSync = async () => {
+      console.log("Syncing settings", { serverUrl, syncId });
       setIsSyncing(true);
       try {
          const result = await window.electronAPI.syncData(serverUrl, syncId);
          if (result.success) {
             setLastSync(new Date().toLocaleTimeString());
          } else {
-            console.error("Sync failed", result.error);
+            setLastSync("Sync failed with error: " + result.error);
          }
       } catch (error) {
          console.error("Sync error", error);
@@ -42,9 +51,9 @@ const Settings = () => {
 
    return (
       <div className="w-full h-full max-w-2xl mx-auto flex items-center justify-center ">
-          <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
+         <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
             <h2 className="text-3xl font-light tracking-widest uppercase">Settings</h2>
-           
+
          </div>
 
          <div className="bg-white/5 p-6 rounded-2xl w-full border items-center border-white/10 space-y-6 m-auto">
@@ -88,8 +97,8 @@ const Settings = () => {
             </div>
 
             {lastSync && (
-               <div className="text-center text-xs text-green-400 mt-2">
-                  Last successful sync: {lastSync}
+               <div className="text-center text-xs mt-2">
+                  {lastSync}
                </div>
             )}
          </div>

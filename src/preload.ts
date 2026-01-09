@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { SettingsDTO } from './shared/ipc';
 
 contextBridge.exposeInMainWorld('electronAPI', {
    getVersion: () => ipcRenderer.invoke('get-version'),
@@ -20,8 +21,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
    addWorldClock: (city: string, timezone: string, removable: number) => ipcRenderer.invoke('add-worldclock', city, timezone, removable),
    deleteWorldClock: (id: number) => ipcRenderer.invoke('delete-worldclock', id),
 
-   updateSettings: (serverUrl: string, syncId: string) => ipcRenderer.send('update-settings', serverUrl, syncId),
-   syncData: (serverUrl: string, syncId: string) => ipcRenderer.invoke('sync-data', serverUrl, syncId),
 
    selectAudioFile: () => ipcRenderer.invoke('select-audio-file'),
    checkFileExists: (path: string) => ipcRenderer.invoke('check-file-exists', path),
@@ -32,5 +31,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
    // Auto-update
    installUpdate: () => ipcRenderer.invoke('install-update'),
    onUpdateAvailable: (callback: () => void) => ipcRenderer.on('update-available', callback),
-   onUpdateDownloaded: (callback: () => void) => ipcRenderer.on('update-downloaded', callback)
+   onUpdateDownloaded: (callback: () => void) => ipcRenderer.on('update-downloaded', callback),
+
+   // Settings
+   updateSettings: (settings: SettingsDTO) => ipcRenderer.invoke('update-settings', settings),
+   syncData: (serverUrl: string, syncId: string) => ipcRenderer.invoke('sync-data', serverUrl, syncId),
 });

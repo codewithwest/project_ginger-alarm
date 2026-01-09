@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Volume2, Save, Pencil, Play, Square, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, Trash2, Volume2, Save, Pencil, } from 'lucide-react';
 import SoundPicker from '../components/SoundPicker';
 
 const Alarms = () => {

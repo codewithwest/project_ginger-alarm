@@ -18,7 +18,6 @@ export interface IElectronAPI {
    addWorldClock: (city: string, timezone: string, removable: number) => Promise<any>;
    deleteWorldClock: (id: number) => Promise<any>;
 
-   updateSettings: (serverUrl: string, syncId: string) => Promise<void>;
    syncData: (serverUrl: string, syncId: string) => Promise<{ success: boolean, error?: string }>;
 
    selectAudioFile: () => Promise<string | null>;
@@ -31,6 +30,11 @@ export interface IElectronAPI {
    installUpdate: () => Promise<void>;
    onUpdateAvailable: (callback: () => void) => void;
    onUpdateDownloaded: (callback: () => void) => void;
+
+   getSettings: () => Promise<SettingsDTO[]>;
+   updateSettings: (settings: SettingsDTO) => Promise<void>;
+   addSettings: (settings: SettingsDTO) => Promise<void>;
+   deleteSettings: (id: number) => Promise<void>;
 }
 
 declare global {
@@ -38,3 +42,4 @@ declare global {
       electronAPI: IElectronAPI;
    }
 }
+

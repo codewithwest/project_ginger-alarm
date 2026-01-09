@@ -175,8 +175,14 @@ app.on('window-all-closed', () => {
   // Keep running in background/tray
 });
 
-import { initDB, getAlarms, addAlarm, deleteAlarm, toggleAlarm, updateAlarm, getTimers, addTimer, deleteTimer, updateTimer, getWorldClocks, addWorldClock, deleteWorldClock } from './db';
+import {
+  initDB, getAlarms, addAlarm, deleteAlarm,
+  toggleAlarm, updateAlarm, getTimers, addTimer,
+  deleteTimer, updateTimer, getWorldClocks, addWorldClock,
+  deleteWorldClock, getSettings, updateSettings, addSettings
+} from './db';
 import fs from 'fs';
+import { SettingsDTO } from './shared/ipc';
 
 // Initialize DB immediately
 initDB();
@@ -204,15 +210,19 @@ ipcMain.handle('get-worldclocks', () => getWorldClocks());
 ipcMain.handle('add-worldclock', (_event, city, timezone, removable) => addWorldClock(city, timezone, removable));
 ipcMain.handle('delete-worldclock', (_event, id) => deleteWorldClock(id));
 
-// Initialize DB
-// Initialize DB
-initDB();
+// Settings DB
+ipcMain.handle('get-settings', () => getSettings());
+ipcMain.handle(
+  'update-settings',
+  (_event, settings: SettingsDTO) =>
+    updateSettings(settings.serverUrl, settings.syncId)
+); ipcMain.handle('add-settings', (_event, settings: SettingsDTO) => addSettings(settings.serverUrl, settings.syncId));
 
 // Sync Logic
 let syncInterval: NodeJS.Timeout;
-let appSettings = {
-  serverUrl: process.env.SERVER_URL || 'http://localhost:3000',
-  syncId: process.env.SYNC_ID || 'default-user'
+let appSettings: { serverUrl: string | null; syncId: string | null } = {
+  serverUrl: null,
+  syncId: null
 };
 
 const performSync = async (serverUrl: string, syncId: string) => {

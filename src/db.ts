@@ -25,7 +25,13 @@ export const initDB = () => {
       timezone TEXT NOT NULL,
       removable INTEGER DEFAULT 1
     );
+    CREATE TABLE IF NOT EXISTS settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      server_url TEXT NOT NULL,
+      sync_id TEXT NOT NULL
+    );
   `);
+
 
   try {
     db.prepare("ALTER TABLE alarms ADD COLUMN sound TEXT DEFAULT 'alarm.mp3'").run();
@@ -53,3 +59,8 @@ export const updateTimer = (id: number, duration: number, label: string) => db.p
 export const getWorldClocks = () => db.prepare('SELECT * FROM worldclocks').all();
 export const addWorldClock = (city: string, timezone: string, removable: number = 1) => db.prepare('INSERT INTO worldclocks (city, timezone, removable) VALUES (?, ?, ?)').run(city, timezone, removable);
 export const deleteWorldClock = (id: number) => db.prepare('DELETE FROM worldclocks WHERE id = ?').run(id);
+
+// Settings API
+export const getSettings = () => { db.prepare('SELECT id, server_url AS serverUrl, sync_id AS syncId FROM settings').get() };
+export const addSettings = (serverUrl: string, syncId: string) => db.prepare('INSERT INTO settings (server_url, sync_id) VALUES (?, ?)').run(serverUrl, syncId);
+export const updateSettings = (serverUrl: string, syncId: string) => db.prepare('UPDATE settings SET server_url = ?, sync_id = ? WHERE id = 1').run(serverUrl, syncId);
