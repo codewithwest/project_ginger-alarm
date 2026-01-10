@@ -1,13 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { version } from '../../package.json';
 
 const Footer = () => {
-   const [version, setVersion] = useState('1.0.0');
-
-   useEffect(() => {
-      window.electronAPI.getVersion().then(setVersion);
-   }, []);
-
    return (
       <footer className="w-full text-center text-xs text-gray-500 mt-auto pt-8 pb-4">
          <div className="flex justify-center gap-4 mb-2">
