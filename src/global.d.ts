@@ -10,15 +10,14 @@ export interface IElectronAPI {
    updateAlarm: (id: number, time: string, label: string, sound: string) => Promise<void>;
 
    getTimers: () => Promise<any[]>;
-   addTimer: (duration: number, label: string) => Promise<any>;
+   addTimer: (duration: number, label: string, sound: string) => Promise<any>;
    deleteTimer: (id: number) => Promise<any>;
-   updateTimer: (id: number, duration: number, label: string) => Promise<any>;
+   updateTimer: (id: number, duration: number, label: string, sound: string) => Promise<any>;
 
    getWorldClocks: () => Promise<any[]>;
    addWorldClock: (city: string, timezone: string, removable: number) => Promise<any>;
    deleteWorldClock: (id: number) => Promise<any>;
 
-   updateSettings: (serverUrl: string, syncId: string) => Promise<void>;
    syncData: (serverUrl: string, syncId: string) => Promise<{ success: boolean, error?: string }>;
 
    selectAudioFile: () => Promise<string | null>;
@@ -31,6 +30,12 @@ export interface IElectronAPI {
    installUpdate: () => Promise<void>;
    onUpdateAvailable: (callback: () => void) => void;
    onUpdateDownloaded: (callback: () => void) => void;
+
+   getSettings: () => Promise<any>;
+   updateSettings: (settings: SettingsDTO) => Promise<void>;
+   getSettingsBySyncId: (syncId: string) => Promise<any>;
+   addSettings: (settings: SettingsDTO) => Promise<void>;
+   deleteSettings: (id: number) => Promise<void>;
 }
 
 declare global {
@@ -38,3 +43,4 @@ declare global {
       electronAPI: IElectronAPI;
    }
 }
+

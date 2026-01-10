@@ -1,97 +1,169 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { RefreshCw, Server, Save } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, Server, Save, CheckCircle2 } from 'lucide-react';
+import { SettingsDTO } from '../shared/ipc';
 
 const Settings = () => {
-   const [serverUrl, setServerUrl] = useState('http://localhost:3000');
-   const [syncId, setSyncId] = useState('user-default');
+   const [serverUrl, setServerUrl] = useState(() => localStorage.getItem('ginger_server_url') || '');
+   const [syncId, setSyncId] = useState(() => localStorage.getItem('ginger_sync_id') || '');
    const [isSyncing, setIsSyncing] = useState(false);
    const [lastSync, setLastSync] = useState<string | null>(null);
+   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
 
    useEffect(() => {
-      // Load settings from local storage or IPC if you had a settings store
-      // For now, we'll just use local state defaults or localStorage
-      const savedUrl = localStorage.getItem('serverUrl');
-      const savedSyncId = localStorage.getItem('syncId');
-      if (savedUrl) setServerUrl(savedUrl);
-      if (savedSyncId) setSyncId(savedSyncId);
+      const loadSettings = async () => {
+         try {
+            const settings = await window.electronAPI.getSettings();
+            console.log("Settings loaded from DB", settings);
+            if (settings) {
+               if (settings.serverUrl) {
+                  setServerUrl(settings.serverUrl);
+                  localStorage.setItem('ginger_server_url', settings.serverUrl);
+               }
+               if (settings.syncId) {
+                  setSyncId(settings.syncId);
+                  localStorage.setItem('ginger_sync_id', settings.syncId);
+               }
+            }
+         } catch (error) {
+            console.error("Error loading settings from DB", error);
+         }
+      };
+
+      loadSettings();
    }, []);
 
-   const handleSave = () => {
-      localStorage.setItem('serverUrl', serverUrl);
-      localStorage.setItem('syncId', syncId);
-      // Notify main process about settings update if needed
-      window.electronAPI.updateSettings(serverUrl, syncId);
+   useEffect(() => {
+      const autoPopulate = async () => {
+         if (syncId.length >= 3) {
+            try {
+               // Defensive check for the API bridge
+               if (!window.electronAPI.getSettingsBySyncId) {
+                  console.warn("getSettingsBySyncId API not available in this build yet");
+                  return;
+               }
+
+               const saved = await window.electronAPI.getSettingsBySyncId(syncId);
+               if (saved && saved.serverUrl && !serverUrl) {
+                  setServerUrl(saved.serverUrl);
+                  console.log("Auto-populated URL for", syncId);
+               }
+            } catch (e) {
+               console.error("Auto-populate error", e);
+            }
+         }
+      };
+
+      const timer = setTimeout(autoPopulate, 500);
+      return () => clearTimeout(timer);
+   }, [syncId]);
+
+   const handleSave = async () => {
+      console.log("Saving settings", { serverUrl, syncId });
+      try {
+         await window.electronAPI.updateSettings({ serverUrl, syncId });
+         localStorage.setItem('ginger_server_url', serverUrl);
+         localStorage.setItem('ginger_sync_id', syncId);
+         setShowSavedFeedback(true);
+         setTimeout(() => setShowSavedFeedback(false), 3000);
+      } catch (error) {
+         console.error("Error saving settings", error);
+      }
    };
 
    const handleSync = async () => {
+      console.log("Syncing settings", { serverUrl, syncId });
       setIsSyncing(true);
       try {
          const result = await window.electronAPI.syncData(serverUrl, syncId);
          if (result.success) {
-            setLastSync(new Date().toLocaleTimeString());
+            setLastSync(`Last sync: ${new Date().toLocaleTimeString()}`);
          } else {
-            console.error("Sync failed", result.error);
+            setLastSync("Sync failed: " + result.error);
          }
       } catch (error) {
          console.error("Sync error", error);
+         setLastSync("Sync error: check connection");
       } finally {
          setIsSyncing(false);
       }
    };
 
    return (
-      <div className="w-full h-full max-w-2xl mx-auto flex items-center justify-center ">
-          <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
+      <div className="w-full h-full max-w-2xl mx-auto flex items-center justify-center p-4">
+         <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 justify-center items-center left-1/2 transform -translate-x-1/2 w-full">
             <h2 className="text-3xl font-light tracking-widest uppercase">Settings</h2>
-           
          </div>
 
-         <div className="bg-white/5 p-6 rounded-2xl w-full border items-center border-white/10 space-y-6 m-auto">
-            <div className="space-y-2">
-               <label className="text-sm text-gray-400 flex items-center gap-2">
-                  <Server size={16} /> Backend Server URL
-               </label>
-               <input
-                  type="text"
-                  value={serverUrl}
-                  onChange={(e) => setServerUrl(e.target.value)}
-                  className="w-full bg-black/20 rounded-lg p-3 outline-none focus:ring-1 focus:ring-primary text-white"
-               />
-            </div>
+         <div className="bg-white/5 p-8 rounded-3xl w-full border border-white/10 space-y-8 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+            <div className="space-y-4">
+               <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                     <Server size={14} className="text-primary" /> Backend Server URL
+                  </label>
+                  <input
+                     type="text"
+                     placeholder="https://your-api.com"
+                     value={serverUrl}
+                     onChange={(e) => setServerUrl(e.target.value)}
+                     className="w-full bg-black/40 border border-white/5 rounded-xl p-4 outline-none focus:ring-2 focus:ring-primary/50 text-white transition-all placeholder:text-gray-600"
+                  />
+               </div>
 
-            <div className="space-y-2">
-               <label className="text-sm text-gray-400">Sync ID (User Identifier)</label>
-               <input
-                  type="text"
-                  value={syncId}
-                  onChange={(e) => setSyncId(e.target.value)}
-                  className="w-full bg-black/20 rounded-lg p-3 outline-none focus:ring-1 focus:ring-primary text-white"
-               />
+               <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                     Sync ID (User Identifier)
+                  </label>
+                  <input
+                     type="text"
+                     placeholder="Your unique ID"
+                     value={syncId}
+                     onChange={(e) => setSyncId(e.target.value)}
+                     className="w-full bg-black/40 border border-white/5 rounded-xl p-4 outline-none focus:ring-2 focus:ring-primary/50 text-white transition-all placeholder:text-gray-600"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1 italic">Used to coordinate alarms across devices.</p>
+               </div>
             </div>
 
             <div className="flex gap-4 pt-4">
                <button
                   onClick={handleSave}
-                  className="flex-1 bg-white/10 hover:bg-white/20 p-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  className="flex-1 bg-white/10 hover:bg-white/20 p-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 group border border-white/5"
                >
-                  <Save size={18} /> Save Settings
+                  <Save size={18} className="group-hover:scale-110 transition-transform" /> 
+                  <span className="font-medium">Save Settings</span>
                </button>
                <button
                   onClick={handleSync}
                   disabled={isSyncing}
-                  className="flex-1 bg-primary hover:bg-indigo-500 disabled:opacity-50 text-white p-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  className="flex-1 bg-primary hover:bg-indigo-500 disabled:opacity-50 text-white p-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-primary/20"
                >
                   <RefreshCw size={18} className={isSyncing ? "animate-spin" : ""} />
-                  {isSyncing ? "Syncing..." : "Sync Now"}
+                  <span className="font-medium">{isSyncing ? "Syncing..." : "Sync Now"}</span>
                </button>
             </div>
 
-            {lastSync && (
-               <div className="text-center text-xs text-green-400 mt-2">
-                  Last successful sync: {lastSync}
-               </div>
-            )}
+            <AnimatePresence>
+               {(lastSync || showSavedFeedback) && (
+                  <motion.div 
+                     initial={{ opacity: 0, y: 10 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     exit={{ opacity: 0, y: 10 }}
+                     className="flex flex-col items-center gap-2"
+                  >
+                     {showSavedFeedback && (
+                        <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
+                           <CheckCircle2 size={16} /> Settings saved successfully
+                        </div>
+                     )}
+                     {lastSync && (
+                        <div className={`text-xs ${lastSync.startsWith('Sync failed') ? 'text-red-400' : 'text-gray-500'}`}>
+                           {lastSync}
+                        </div>
+                     )}
+                  </motion.div>
+               )}
+            </AnimatePresence>
          </div>
       </div>
    );

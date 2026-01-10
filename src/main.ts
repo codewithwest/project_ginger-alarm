@@ -10,14 +10,14 @@ function handleCLIArgs() {
     if (args[i] === '--create-alarm' && args[i + 1]) {
       // Format: --create-alarm "07:00" "Wake up" "alarm.mp3"
       const time = args[i + 1];
-      const label = args[i + 2] || 'Alarm';
-      const sound = args[i + 3] || 'alarm.mp3';
+      const alarmLabel = args[i + 2] || 'Alarm';
+      const alarmSound = args[i + 3] || 'alarm.mp3';
 
       // Will be initialized after DB is ready
       setTimeout(() => {
         try {
-          addAlarm(time, label, sound);
-          console.log(`✓ Alarm created: ${time} - ${label}`);
+          addAlarm(time, alarmLabel, alarmSound);
+          console.log(`✓ Alarm created: ${time} - ${alarmLabel}`);
         } catch (e) {
           console.error('Failed to create alarm:', e);
         }
@@ -25,20 +25,21 @@ function handleCLIArgs() {
 
       i += 3;
     } else if (args[i] === '--create-timer' && args[i + 1]) {
-      // Format: --create-timer 900 "15 minute timer"
+      // Format: --create-timer 900 "15 minute timer" "alarm.mp3"
       const duration = parseInt(args[i + 1]);
-      const label = args[i + 2] || 'Timer';
+      const timerLabel = args[i + 2] || 'Timer';
+      const timerSound = args[i + 3] || 'alarm.mp3';
 
       setTimeout(() => {
         try {
-          addTimer(duration, label);
-          console.log(`✓ Timer created: ${duration}s - ${label}`);
+          addTimer(duration, timerLabel, timerSound);
+          console.log(`✓ Timer created: ${duration}s - ${timerLabel}`);
         } catch (e) {
           console.error('Failed to create timer:', e);
         }
       }, 1000);
 
-      i += 2;
+      i += 3;
     }
   }
 }
@@ -175,11 +176,24 @@ app.on('window-all-closed', () => {
   // Keep running in background/tray
 });
 
-import { initDB, getAlarms, addAlarm, deleteAlarm, toggleAlarm, updateAlarm, getTimers, addTimer, deleteTimer, updateTimer, getWorldClocks, addWorldClock, deleteWorldClock } from './db';
+import {
+  initDB, getAlarms, addAlarm, deleteAlarm,
+  toggleAlarm, updateAlarm, getTimers, addTimer,
+  deleteTimer, updateTimer, getWorldClocks, addWorldClock,
+  deleteWorldClock, getSettings, updateSettings, addSettings, getSettingsBySyncId
+} from './db';
 import fs from 'fs';
+import { SettingsDTO } from './shared/ipc';
 
 // Initialize DB immediately
 initDB();
+
+// Load initial settings
+let currentSettings = getSettings() as any;
+let appSettings: { serverUrl: string | null; syncId: string | null } = {
+  serverUrl: currentSettings?.serverUrl || null,
+  syncId: currentSettings?.syncId || null
+};
 
 // IPC handlers (same as before)
 ipcMain.handle('get-version', () => app.getVersion());
@@ -191,29 +205,51 @@ ipcMain.handle('add-alarm', (_event, time, label, sound) => addAlarm(time, label
 ipcMain.handle('delete-alarm', (_event, id) => deleteAlarm(id));
 ipcMain.handle('toggle-alarm', (_event, id, active) => toggleAlarm(id, active));
 ipcMain.handle('update-alarm', (_event, id, time, label, sound) => {
-  console.log('IPC update-alarm:', { id, time, label, sound });
   return updateAlarm(id, time, label, sound);
 });
 
 ipcMain.handle('get-timers', () => getTimers());
-ipcMain.handle('add-timer', (_event, duration, label) => addTimer(duration, label));
+ipcMain.handle('add-timer', (_event, duration, label, sound) => addTimer(duration, label, sound));
 ipcMain.handle('delete-timer', (_event, id) => deleteTimer(id));
-ipcMain.handle('update-timer', (_event, id, duration, label) => updateTimer(id, duration, label));
+ipcMain.handle('update-timer', (_event, id, duration, label, sound) => updateTimer(id, duration, label, sound));
 
 ipcMain.handle('get-worldclocks', () => getWorldClocks());
 ipcMain.handle('add-worldclock', (_event, city, timezone, removable) => addWorldClock(city, timezone, removable));
 ipcMain.handle('delete-worldclock', (_event, id) => deleteWorldClock(id));
 
-// Initialize DB
-// Initialize DB
-initDB();
+// Settings DB
+ipcMain.handle('get-settings', () => getSettings());
+console.log('[DEBUG] Attempting to register get-settings-by-sync-id handler');
+try {
+  ipcMain.removeHandler('get-settings-by-sync-id');
+} catch (e) {
+  // Ignore if not exists
+}
+ipcMain.handle('get-settings-by-sync-id', (_event, syncId: string) => {
+  console.log('[IPC] get-settings-by-sync-id called with:', syncId);
+  try {
+    const result = getSettingsBySyncId(syncId);
+    console.log('[IPC] get-settings-by-sync-id result found:', !!result);
+    return result;
+  } catch (error) {
+    console.error('[IPC ERROR] get-settings-by-sync-id failed:', error);
+    throw error;
+  }
+});
+ipcMain.handle(
+  'update-settings',
+  (_event, settings: SettingsDTO) => {
+    const result = updateSettings(settings.serverUrl, settings.syncId);
+    appSettings = { serverUrl: settings.serverUrl, syncId: settings.syncId };
+    console.log('Settings updated and saved to DB:', appSettings);
+    startSyncInterval(); // Restart interval with new settings
+    return result;
+  }
+);
+ipcMain.handle('add-settings', (_event, settings: SettingsDTO) => addSettings(settings.serverUrl, settings.syncId));
 
 // Sync Logic
 let syncInterval: NodeJS.Timeout;
-let appSettings = {
-  serverUrl: process.env.SERVER_URL || 'http://localhost:3000',
-  syncId: process.env.SYNC_ID || 'default-user'
-};
 
 const performSync = async (serverUrl: string, syncId: string) => {
   if (!serverUrl || !syncId) {
@@ -252,7 +288,7 @@ const performSync = async (serverUrl: string, syncId: string) => {
     if (result.timers) {
       result.timers.forEach((timer: any) => {
         if (!timers.find((t: any) => t.id === timer.id)) {
-          addTimer(timer.duration, timer.label);
+          addTimer(timer.duration, timer.label, timer.sound);
         }
       });
     }
@@ -289,12 +325,7 @@ const startSyncInterval = () => {
   }, 60 * 1000);
 };
 
-// Handlers
-ipcMain.on('update-settings', (_event, serverUrl, syncId) => {
-  appSettings = { serverUrl, syncId };
-  console.log('Settings updated:', appSettings);
-  startSyncInterval(); // Restart interval with new settings
-});
+// Handlers - removed redundant ipcMain.on('update-settings') as it is now handled by ipcMain.handle above
 
 ipcMain.handle('sync-data', (_event, serverUrl, syncId) => {
   // Update settings immediately on manual sync attempt too

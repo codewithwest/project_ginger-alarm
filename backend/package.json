@@ -1,10 +1,10 @@
 {
   "name": "ginger-alarm-backend",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Backend for Ginger Alarm App Sync",
-  "main": "src/index.js",
+  "main": "src/server.ts",
   "scripts": {
-    "dev": "nodemon src/index.ts",
+    "dev": "nodemon src/server.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest"

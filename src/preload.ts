@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { SettingsDTO } from './shared/ipc';
 
 contextBridge.exposeInMainWorld('electronAPI', {
    getVersion: () => ipcRenderer.invoke('get-version'),
@@ -12,16 +13,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
    updateAlarm: (id: number, time: string, label: string, sound: string) => ipcRenderer.invoke('update-alarm', id, time, label, sound),
 
    getTimers: () => ipcRenderer.invoke('get-timers'),
-   addTimer: (duration: number, label: string) => ipcRenderer.invoke('add-timer', duration, label),
+   addTimer: (duration: number, label: string, sound: string) => ipcRenderer.invoke('add-timer', duration, label, sound),
    deleteTimer: (id: number) => ipcRenderer.invoke('delete-timer', id),
-   updateTimer: (id: number, duration: number, label: string) => ipcRenderer.invoke('update-timer', id, duration, label),
+   updateTimer: (id: number, duration: number, label: string, sound: string) => ipcRenderer.invoke('update-timer', id, duration, label, sound),
 
    getWorldClocks: () => ipcRenderer.invoke('get-worldclocks'),
    addWorldClock: (city: string, timezone: string, removable: number) => ipcRenderer.invoke('add-worldclock', city, timezone, removable),
    deleteWorldClock: (id: number) => ipcRenderer.invoke('delete-worldclock', id),
 
-   updateSettings: (serverUrl: string, syncId: string) => ipcRenderer.send('update-settings', serverUrl, syncId),
-   syncData: (serverUrl: string, syncId: string) => ipcRenderer.invoke('sync-data', serverUrl, syncId),
 
    selectAudioFile: () => ipcRenderer.invoke('select-audio-file'),
    checkFileExists: (path: string) => ipcRenderer.invoke('check-file-exists', path),
@@ -32,5 +31,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
    // Auto-update
    installUpdate: () => ipcRenderer.invoke('install-update'),
    onUpdateAvailable: (callback: () => void) => ipcRenderer.on('update-available', callback),
-   onUpdateDownloaded: (callback: () => void) => ipcRenderer.on('update-downloaded', callback)
+   onUpdateDownloaded: (callback: () => void) => ipcRenderer.on('update-downloaded', callback),
+
+   // Settings
+   updateSettings: (settings: SettingsDTO) => ipcRenderer.invoke('update-settings', settings),
+   syncData: (serverUrl: string, syncId: string) => ipcRenderer.invoke('sync-data', serverUrl, syncId),
+   getSettingsBySyncId: (syncId: string) => ipcRenderer.invoke('get-settings-by-sync-id', syncId),
 });

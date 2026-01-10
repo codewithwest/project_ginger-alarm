@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Clock, AlarmClock, Timer, Hourglass, Settings } from 'lucide-react';
 import clsx from 'clsx';
@@ -19,13 +18,13 @@ const NavItem = ({ to, icon: Icon, label, offset }: { to: string; icon: any; lab
       {({ isActive }) => (
          <>
             <div className={clsx(
-               "p-3 rounded-full transition-all duration-300",
-               isActive ? "bg-white/20 shadow-[0_0_25px_rgba(255,255,255,0.4)] scale-110" : "group-hover:bg-white/10"
+               "px-3 py-2 rounded-full transition-all duration-300",
+               isActive ? "bg-white/20 shadow-[0_0_25px_rgba(255,255,255,0.4)] scale-80" : "group-hover:bg-white/10"
             )}>
-               <Icon size={26} className="transition-transform duration-300" />
+               <Icon size={28} className="transition-transform duration-300" />
             </div>
             <span className={clsx(
-               "text-[8px] font-bold uppercase tracking-wider mt-1.5 transition-opacity duration-300",
+               "text-[8px] font-bold uppercase tracking-wider mt-1 transition-opacity duration-300",
                isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
             )}>{label}</span>
          </>
@@ -35,7 +34,7 @@ const NavItem = ({ to, icon: Icon, label, offset }: { to: string; icon: any; lab
 
 const Navbar = () => {
    return (
-      <nav className="absolute bottom-0 left-0 w-full h-64 pointer-events-none z-50">
+      <nav className="absolute bottom-0 left-0 w-full h-64 pointer-events-none z-10">
          {/* SVG Background - Deep Concave Arc with Material Depth */}
          <svg
             viewBox="0 0 100 100"
@@ -88,11 +87,11 @@ const Navbar = () => {
 
          {/* Navigation Items - Shifted down to be fully submerged in the glass */}
          <div className="absolute inset-0 flex items-start justify-center gap-3 pt-36 px-12 pointer-events-auto">
-            <NavItem to="/" icon={Clock} label="Clock" offset={10} />
-            <NavItem to="/alarms" icon={AlarmClock} label="Alarm" offset={38} />
-            <NavItem to="/timer" icon={Timer} label="Timer" offset={44} />
-            <NavItem to="/stopwatch" icon={Hourglass} label="Stopwatch" offset={38} />
-            <NavItem to="/settings" icon={Settings} label="Settings" offset={10} />
+            <NavItem to="/" icon={Clock} label="Clock" offset={3} />
+            <NavItem to="/alarms" icon={AlarmClock} label="Alarm" offset={31} />
+            <NavItem to="/timer" icon={Timer} label="Timer" offset={37} />
+            <NavItem to="/stopwatch" icon={Hourglass} label="Stopwatch" offset={31} />
+            <NavItem to="/settings" icon={Settings} label="Settings" offset={3} />
          </div>
       </nav>
    );

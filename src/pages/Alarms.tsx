@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Volume2, Save, Pencil, Play, Square, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, Trash2, Volume2, Save, Pencil, } from 'lucide-react';
 import SoundPicker from '../components/SoundPicker';
 
 const Alarms = () => {
@@ -109,8 +109,9 @@ const Alarms = () => {
    }, []);
 
    return (
-      <div className="no-scrollbar w-full max-w-5xl mx-auto h-full overflow-hidden">
-         <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-8 px-4 w-full">
+      <div className="no-scrollbar w-full max-w-[85%] my-auto h-full flex flex-col">
+         <div className="absolute flex gap-3 text-3xl font-light tracking-widest uppercase top-11 z-10 flex 
+         justify-center items-center left-1/2 transform -translate-x-1/2 space-x-4 items-center mb-6 px-4 w-full">
             <h2 className="text-3xl font-light tracking-widest uppercase">Alarms</h2>
             {!showForm && (
                <button
@@ -126,17 +127,20 @@ const Alarms = () => {
             <motion.div
                initial={{ opacity: 0, height: 0 }}
                animate={{ opacity: 1, height: 'auto' }}
-               className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col gap-4 mb-8 overflow-hidden"
+               className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col gap-4 mb-4"
             >
                <h4 className="text-sm font-medium text-gray-400">{editingId ? 'Edit Alarm' : 'New Alarm'}</h4>
                <div className="flex gap-4 items-end">
                   <div className="flex-1">
                      <label className="text-xs text-gray-400 block mb-1">Time</label>
-                     <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)} className="w-full bg-black/20 rounded-lg p-2 outline-none focus:ring-1 focus:ring-primary h-10" />
+                     <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
+                        className="w-full bg-black/20 rounded-lg p-2 
+                     outline-none focus:ring-1 focus:ring-primary h-10" />
                   </div>
                   <div className="flex-[2]">
                      <label className="text-xs text-gray-400 block mb-1">Label</label>
-                     <input type="text" value={newLabel} onChange={e => setNewLabel(e.target.value)} className="w-full bg-black/20 rounded-lg p-2 outline-none focus:ring-1 focus:ring-primary h-10" />
+                     <input type="text" value={newLabel} onChange={e => setNewLabel(e.target.value)}
+                        className="w-full bg-black/20 rounded-lg p-2 outline-none focus:ring-1 focus:ring-primary h-10" />
                   </div>
                </div>
 
@@ -146,7 +150,8 @@ const Alarms = () => {
                      <div className="flex gap-2">
                         <button
                            onClick={() => setShowSoundPicker(true)}
-                           className="flex-1 bg-black/20 rounded-lg p-2 outline-none focus:ring-1 focus:ring-primary h-10 text-white text-left px-3 hover:bg-black/30 transition-colors flex items-center justify-between"
+                           className="flex-1 bg-black/20 rounded-lg p-2 outline-none focus:ring-1 focus:ring-primary h-10 t
+                           ext-white text-left px-3 hover:bg-black/30 transition-colors flex items-center justify-between"
                         >
                            <span className="truncate">
                               {newSound.startsWith('/') ? 'External File' : availableSounds.find(s => s.value === newSound)?.label || newSound}
@@ -185,13 +190,15 @@ const Alarms = () => {
             </motion.div>
          )}
 
-         <div className="no-scrollbar mt-10 space-y-2 h-full overflow-y-scroll scrollbar-thin pr-1">
+         <div className="no-scrollbar mt-2 space-y-2 h-full w-full overflow-y-scroll scrollbar-thin flex flex-col justify-center">
             {alarms.map((alarm) => (
                <motion.div
                   key={alarm.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className={`bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex items-center justify-between group hover:bg-white/10 transition-colors ${editingId === alarm.id ? 'border-primary ring-1 ring-primary' : ''}`}
+                  className={`bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex 
+                     items-center justify-between group hover:bg-white/10 transition-colors ${editingId === alarm.id ?
+                        'border-primary ring-1 ring-primary' : ''}`}
                >
                   <div>
                      <div className="text-4xl font-light">{alarm.time}</div>
