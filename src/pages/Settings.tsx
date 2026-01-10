@@ -4,8 +4,8 @@ import { RefreshCw, Server, Save, CheckCircle2 } from 'lucide-react';
 import { SettingsDTO } from '../shared/ipc';
 
 const Settings = () => {
-   const [serverUrl, setServerUrl] = useState('');
-   const [syncId, setSyncId] = useState('');
+   const [serverUrl, setServerUrl] = useState(() => localStorage.getItem('ginger_server_url') || '');
+   const [syncId, setSyncId] = useState(() => localStorage.getItem('ginger_sync_id') || '');
    const [isSyncing, setIsSyncing] = useState(false);
    const [lastSync, setLastSync] = useState<string | null>(null);
    const [showSavedFeedback, setShowSavedFeedback] = useState(false);
@@ -14,13 +14,19 @@ const Settings = () => {
       const loadSettings = async () => {
          try {
             const settings = await window.electronAPI.getSettings();
-            console.log("Settings loaded", settings);
+            console.log("Settings loaded from DB", settings);
             if (settings) {
-               setServerUrl(settings.serverUrl || '');
-               setSyncId(settings.syncId || '');
+               if (settings.serverUrl) {
+                  setServerUrl(settings.serverUrl);
+                  localStorage.setItem('ginger_server_url', settings.serverUrl);
+               }
+               if (settings.syncId) {
+                  setSyncId(settings.syncId);
+                  localStorage.setItem('ginger_sync_id', settings.syncId);
+               }
             }
          } catch (error) {
-            console.error("Error loading settings", error);
+            console.error("Error loading settings from DB", error);
          }
       };
 
@@ -56,6 +62,8 @@ const Settings = () => {
       console.log("Saving settings", { serverUrl, syncId });
       try {
          await window.electronAPI.updateSettings({ serverUrl, syncId });
+         localStorage.setItem('ginger_server_url', serverUrl);
+         localStorage.setItem('ginger_sync_id', syncId);
          setShowSavedFeedback(true);
          setTimeout(() => setShowSavedFeedback(false), 3000);
       } catch (error) {

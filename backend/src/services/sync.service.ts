@@ -4,6 +4,9 @@ import { User } from '../models/User';
 
 export class SyncService {
    static async syncData(syncId: string, alarms: any[], timers: any[]) {
+      console.log(`[SYNC] Starting sync for user: ${syncId}`);
+      console.log(`[SYNC] Data: ${alarms?.length || 0} alarms, ${timers?.length || 0} timers`);
+
       // 1. Ensure user exists
       await User.findOneAndUpdate(
          { syncId },
